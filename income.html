@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My 가계부 - 수입 입력</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<main>
+  <section class="hero income-hero">
+    <div class="hero-bg"></div>
+
+    <header class="nav">
+      <div class="nav-inner">
+        <div class="nav-left">
+          <div class="logo">
+            <span class="logo-icon">📘</span>
+            <span class="logo-text">My 가계부</span>
+          </div>
+
+          <nav class="nav-menu">
+            <a href="index.html" target="_blank" class="nav-link">홈</a>
+            <a href="income.html" target="_blank" class="nav-link active">수입</a>
+            <a href="expense.html" target="_blank" class="nav-link">지출</a>
+          </nav>
+        </div>
+
+        <div class="nav-right">
+          <nav class="nav-menu">
+            <a href="stats.html" target="_blank" class="nav-link">통계</a>
+            <a href="settings.html" target="_blank" class="nav-link">설정</a>
+          </nav>
+
+          <div class="user-menu">
+            <span class="user-icon">👤</span>
+            <span class="user-greeting">안녕하세요, 사용자님</span>
+            <span class="dropdown-arrow">⌄</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="hero-content">
+      <p class="hero-line1">이번 달 수입을 기록해볼까요?</p>
+      <h1 class="hero-line2">수입 입력</h1>
+      <p class="hero-line3">항목별 금액을 입력하고 저장하면 아래 내역에 자동으로 추가돼요.</p>
+    </div>
+  </section>
+
+  <section class="income-form-section">
+    <form id="income-form" class="income-form-card">
+
+      <div class="form-section">
+        <h3 class="form-section-title">월급</h3>
+
+        <div class="form-subsection">
+          <span class="form-subsection-label">대덕자립센터</span>
+          <div class="form-field-grid">
+            <label class="form-field">
+              <span>월급</span>
+              <input type="number" inputmode="numeric" min="0" placeholder="0" data-key="daedeok-base">
+            </label>
+            <label class="form-field">
+              <span>연차 수당</span>
+              <input type="number" inputmode="numeric" min="0" placeholder="0" data-key="daedeok-annual">
+            </label>
+            <label class="form-field">
+              <span>공휴일 수당</span>
+              <input type="number" inputmode="numeric" min="0" placeholder="0" data-key="daedeok-holiday">
+            </label>
+          </div>
+        </div>
+
+        <div class="form-subsection">
+          <span class="form-subsection-label">돌봄센터</span>
+          <div class="form-field-grid">
+            <label class="form-field">
+              <span>급여</span>
+              <input type="number" inputmode="numeric" min="0" placeholder="0" data-key="dolbom-base">
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3 class="form-section-title">기타 수입</h3>
+        <div class="form-field-grid">
+          <label class="form-field">
+            <span>월세</span>
+            <input type="number" inputmode="numeric" min="0" placeholder="0" data-key="rent">
+          </label>
+          <label class="form-field">
+            <span>계단청소</span>
+            <input type="number" inputmode="numeric" min="0" placeholder="0" data-key="stairs">
+          </label>
+          <label class="form-field wide">
+            <span>기타수입</span>
+            <input type="number" inputmode="numeric" min="0" placeholder="0" data-key="etc">
+            <input type="text" class="etc-memo" placeholder="메모 (선택)" data-key="etc-memo">
+          </label>
+        </div>
+      </div>
+
+      <div class="form-footer">
+        <label class="form-date">
+          <span>날짜</span>
+          <input type="date" id="income-date">
+        </label>
+        <div class="form-total">
+          합계 <strong id="income-total">0원</strong>
+        </div>
+        <button type="submit" class="save-btn">저장하기</button>
+      </div>
+
+    </form>
+  </section>
+
+  <section class="tables single">
+    <div class="table-card">
+      <div class="table-header">
+        <h2><span class="table-icon income">↓</span> 수입 내역</h2>
+      </div>
+
+      <div class="table-actions">
+        <span class="selected-count" id="income-selected-count">0개 선택됨</span>
+        <div class="table-actions-buttons">
+          <button type="button" id="income-edit-btn" class="table-action-btn edit" disabled>수정</button>
+          <button type="button" id="income-delete-btn" class="table-action-btn delete" disabled>삭제</button>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th class="col-check"><input type="checkbox" id="income-select-all"></th>
+            <th>날짜</th><th>항목</th><th>금액</th><th>메모</th>
+          </tr>
+        </thead>
+        <tbody id="income-table-body">
+          <!-- rendered by js/income.js -->
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal-card">
+    <div class="modal-icon">🗑️</div>
+    <h3 class="modal-title">삭제할까요?</h3>
+    <p class="modal-message" id="delete-modal-message">선택한 내역을 삭제할게요.</p>
+    <div class="modal-actions">
+      <button type="button" class="modal-btn cancel" id="delete-modal-cancel">아니요</button>
+      <button type="button" class="modal-btn confirm" id="delete-modal-confirm">삭제할게요</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/income.js"></script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My 가계부</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<main>
+  <section class="hero">
+    <div class="hero-bg"></div>
+
+    <header class="nav">
+      <div class="nav-inner">
+        <div class="nav-left">
+          <div class="logo">
+            <span class="logo-icon">📘</span>
+            <span class="logo-text">My 가계부</span>
+          </div>
+
+          <nav class="nav-menu">
+            <a href="index.html" target="_blank" class="nav-link active">홈</a>
+            <a href="income.html" target="_blank" class="nav-link">수입</a>
+            <a href="expense.html" target="_blank" class="nav-link">지출</a>
+          </nav>
+        </div>
+
+        <div class="nav-right">
+          <nav class="nav-menu">
+            <a href="stats.html" target="_blank" class="nav-link">통계</a>
+            <a href="settings.html" target="_blank" class="nav-link">설정</a>
+          </nav>
+
+          <div class="user-menu">
+            <span class="user-icon">👤</span>
+            <span class="user-greeting">안녕하세요, 사용자님</span>
+            <span class="dropdown-arrow">⌄</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="hero-content">
+      <p class="hero-line1">오늘도 현명한 선택,</p>
+      <h1 class="hero-line2">알뜰한 가계부로<br>시작하세요!</h1>
+      <p class="hero-line3">수입과 지출을 관리하고 목표를 달성해보세요.</p>
+    </div>
+
+    <div class="summary-box">
+      <div class="summary-item">
+        <span class="summary-icon icon-income">💰</span>
+        <div class="summary-text">
+          <span class="summary-label">이번 달 총 수입</span>
+          <span class="summary-value income" id="home-total-income">0<small>원</small></span>
+        </div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-item">
+        <span class="summary-icon icon-expense">📕</span>
+        <div class="summary-text">
+          <span class="summary-label">이번 달 총 지출</span>
+          <span class="summary-value expense" id="home-total-expense">0<small>원</small></span>
+        </div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-item">
+        <span class="summary-icon icon-balance">📊</span>
+        <div class="summary-text">
+          <span class="summary-label">이번 달 잔액</span>
+          <span class="summary-value balance" id="home-total-balance">0<small>원</small></span>
+        </div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-item">
+        <span class="summary-icon icon-goal">🎯</span>
+        <div class="summary-text">
+          <span class="summary-label">저축 목표 달성률</span>
+          <span class="summary-value goal">65%</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tables">
+    <div class="table-card">
+      <div class="table-header">
+        <h2><span class="table-icon income">↓</span> 수입 내역</h2>
+      </div>
+      <table>
+        <thead>
+          <tr><th>날짜</th><th>항목</th><th>금액</th><th>메모</th></tr>
+        </thead>
+        <tbody id="income-table-body">
+          <!-- js/main.js가 income.html에 저장된 내역을 불러와 렌더링 -->
+        </tbody>
+      </table>
+      <a href="income.html" target="_blank" class="more-link">더보기 ›</a>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header">
+        <h2><span class="table-icon expense">↑</span> 지출 내역</h2>
+      </div>
+      <table>
+        <thead>
+          <tr><th>날짜</th><th>항목</th><th>금액</th><th>메모</th></tr>
+        </thead>
+        <tbody id="expense-table-body">
+          <!-- js/main.js가 expense.html에 저장된 내역을 불러와 렌더링 -->
+        </tbody>
+      </table>
+      <a href="expense.html" target="_blank" class="more-link">더보기 ›</a>
+    </div>
+  </section>
+</main>
+
+<script src="js/main.js"></script>
+</body>
+</html>
