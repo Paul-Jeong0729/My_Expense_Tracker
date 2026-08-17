@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My 가계부 - 설정</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<main>
+  <section class="hero settings-hero">
+    <div class="hero-bg"></div>
+
+    <header class="nav">
+      <div class="nav-inner">
+        <div class="nav-left">
+          <div class="logo">
+            <span class="logo-icon">📘</span>
+            <span class="logo-text">My 가계부</span>
+          </div>
+
+          <nav class="nav-menu">
+            <a href="index.html" target="_blank" class="nav-link">홈</a>
+            <a href="income.html" target="_blank" class="nav-link">수입</a>
+            <a href="expense.html" target="_blank" class="nav-link">지출</a>
+          </nav>
+        </div>
+
+        <div class="nav-right">
+          <nav class="nav-menu">
+            <a href="stats.html" target="_blank" class="nav-link">통계</a>
+            <a href="settings.html" target="_blank" class="nav-link active">설정</a>
+          </nav>
+
+          <div class="user-menu" id="user-menu">
+            <span class="user-icon">👤</span>
+            <span class="user-greeting">사랑해요 양균님</span>
+            <span class="dropdown-arrow">⌄</span>
+
+            <div class="user-dropdown" id="user-dropdown">
+              <button type="button" class="user-dropdown-item logout" id="logout-btn">
+                <span class="user-dropdown-icon">🚪</span>
+                <span>로그아웃</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="hero-content">
+      <p class="hero-line1">계정 정보를 관리해볼까요?</p>
+      <h1 class="hero-line2">설정</h1>
+      <p class="hero-line3">비밀번호를 변경하고 계정을 안전하게 지켜보세요.</p>
+    </div>
+  </section>
+
+  <section class="settings-section">
+    <div class="settings-card">
+      <h2 class="settings-card-title">🔒 비밀번호 수정</h2>
+      <p class="settings-card-desc">보안을 위해 현재 비밀번호를 먼저 확인해요.<br>새 비밀번호는 6자 이상으로 설정해주세요.</p>
+
+      <form id="password-form">
+        <label class="settings-field">
+          <span>현재 비밀번호</span>
+          <input type="password" id="current-password" placeholder="현재 비밀번호" autocomplete="current-password" required>
+        </label>
+        <label class="settings-field">
+          <span>새 비밀번호</span>
+          <input type="password" id="new-password" placeholder="새 비밀번호 (6자 이상)" autocomplete="new-password" minlength="6" required>
+        </label>
+        <label class="settings-field">
+          <span>새 비밀번호 확인</span>
+          <input type="password" id="new-password-confirm" placeholder="새 비밀번호 확인" autocomplete="new-password" minlength="6" required>
+        </label>
+
+        <p class="settings-message" id="password-message"></p>
+
+        <button type="submit" class="save-btn" id="password-submit">비밀번호 변경</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth-guard.js"></script>
+<script src="js/settings.js"></script>
+</body>
+</html>

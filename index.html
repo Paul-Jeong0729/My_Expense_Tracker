@@ -39,10 +39,17 @@
             <a href="settings.html" target="_blank" class="nav-link">설정</a>
           </nav>
 
-          <div class="user-menu">
+          <div class="user-menu" id="user-menu">
             <span class="user-icon">👤</span>
-            <span class="user-greeting">안녕하세요, 사용자님</span>
+            <span class="user-greeting">사랑해요 양균님</span>
             <span class="dropdown-arrow">⌄</span>
+
+            <div class="user-dropdown" id="user-dropdown">
+              <button type="button" class="user-dropdown-item logout" id="logout-btn">
+                <span class="user-dropdown-icon">🚪</span>
+                <span>로그아웃</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -122,6 +129,11 @@
   </section>
 </main>
 
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth-guard.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
