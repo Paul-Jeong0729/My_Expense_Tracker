@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My 가계부 - 계정 생성 (1회용)</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="login-body">
+
+<main class="login-page">
+  <div class="login-card">
+    <div class="logo login-logo">
+      <span class="logo-icon">📘</span>
+      <span class="logo-text">My 가계부</span>
+    </div>
+    <p class="login-subtitle">최초 1회, 로그인 계정을 만드는 페이지예요.</p>
+
+    <div class="settings-field" style="margin-top: 20px;">
+      <span>생성될 이메일</span>
+      <input type="text" value="jeongyk0729@gmail.com" disabled>
+    </div>
+    <div class="settings-field">
+      <span>생성될 비밀번호</span>
+      <input type="text" value="123456" disabled>
+    </div>
+
+    <p class="login-error" id="setup-message"></p>
+
+    <button type="button" class="save-btn login-submit" id="setup-btn">계정 만들기</button>
+
+    <p class="login-hint">
+      이 버튼은 한 번만 누르면 돼요. 계정이 만들어지면 <a href="login.html" style="color: var(--brand); text-decoration: underline;">로그인 페이지</a>로 이동해서
+      위 이메일/비밀번호로 로그인해보세요. 로그인 후에는 설정 페이지에서 원하는 비밀번호로 바꿀 수 있어요.<br><br>
+      ⚠️ 계정을 만든 뒤에는 보안을 위해 이 <code>setup-account.html</code> 파일을 저장소에서 삭제해주세요.
+    </p>
+  </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script>
+document.getElementById('setup-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('setup-btn');
+  const msg = document.getElementById('setup-message');
+  const email = 'jeongyk0729@gmail.com';
+  const password = '123456';
+
+  btn.disabled = true;
+  btn.textContent = '만드는 중...';
+  msg.style.color = 'var(--expense)';
+  msg.textContent = '';
+
+  try {
+    await auth.createUserWithEmailAndPassword(email, password);
+    msg.style.color = 'var(--balance)';
+    msg.textContent = '계정이 만들어졌어요! 이제 로그인 페이지로 이동해서 로그인해보세요.';
+    btn.textContent = '완료';
+  } catch (err) {
+    if (err.code === 'auth/email-already-in-use') {
+      msg.style.color = 'var(--balance)';
+      msg.textContent = '이미 계정이 있어요. 바로 로그인 페이지로 이동해서 로그인해보세요.';
+    } else {
+      msg.textContent = '계정 생성에 실패했어요: ' + err.message;
+    }
+    btn.disabled = false;
+    btn.textContent = '계정 만들기';
+  }
+});
+</script>
+</body>
+</html>

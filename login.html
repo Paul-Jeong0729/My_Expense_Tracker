@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My 가계부 - 로그인</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="login-body">
+
+<main class="login-page">
+  <div class="login-card">
+    <div class="logo login-logo">
+      <span class="logo-icon">📘</span>
+      <span class="logo-text">My 가계부</span>
+    </div>
+    <p class="login-subtitle">부부만 사용하는 가계부예요. 로그인해주세요.</p>
+
+    <form id="login-form" class="login-form">
+      <label class="login-field">
+        <span>이메일</span>
+        <input type="email" id="login-email" placeholder="you@example.com" required autocomplete="username">
+      </label>
+      <label class="login-field">
+        <span>비밀번호</span>
+        <input type="password" id="login-password" placeholder="비밀번호" required autocomplete="current-password">
+      </label>
+
+      <p class="login-error" id="login-error"></p>
+
+      <button type="submit" class="save-btn login-submit" id="login-submit">로그인</button>
+    </form>
+
+    <p class="login-hint">계정이 없다면 Firebase 콘솔의 Authentication에서 두 분 계정을 미리 등록해주세요.</p>
+  </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/login.js"></script>
+</body>
+</html>
