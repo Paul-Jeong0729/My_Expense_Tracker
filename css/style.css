@@ -103,6 +103,8 @@ a { text-decoration: none; color: inherit; }
 
 .user-menu.open .dropdown-arrow { transform: rotate(180deg); }
 
+.user-menu.logged-out .dropdown-arrow { display: none; }
+
 .user-dropdown {
   position: absolute;
   top: calc(100% + 8px);
