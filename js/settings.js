@@ -20,7 +20,10 @@ function passwordFriendlyError(error) {
 
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('password-form');
-  if (!form) return;
+  if (!form) {
+    console.error('[settings.js] #password-form 엘리먼트를 찾을 수 없어요.');
+    return;
+  }
 
   const currentInput = document.getElementById('current-password');
   const newInput = document.getElementById('new-password');
@@ -29,48 +32,74 @@ document.addEventListener('DOMContentLoaded', () => {
   const submitBtn = document.getElementById('password-submit');
 
   function showMessage(text, type) {
+    if (!messageEl) {
+      // 메시지 영역을 못 찾는 극단적인 경우에도 사용자가 결과를 알 수 있게 함
+      if (text) alert(text);
+      return;
+    }
     messageEl.textContent = text;
     messageEl.className = 'settings-message' + (type ? ' ' + type : '');
   }
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
-    showMessage('', '');
-
-    const currentPassword = currentInput.value;
-    const newPassword = newInput.value;
-    const confirmPassword = confirmInput.value;
-
-    if (newPassword.length < 6) {
-      showMessage('새 비밀번호는 6자 이상이어야 해요.', 'error');
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      showMessage('새 비밀번호가 서로 일치하지 않아요.', 'error');
-      return;
-    }
-
-    const user = auth.currentUser;
-    if (!user) {
-      showMessage('로그인 정보를 확인할 수 없어요. 다시 로그인해주세요.', 'error');
-      return;
-    }
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = '변경 중...';
 
     try {
-      const credential = firebase.auth.EmailAuthProvider.credential(user.email, currentPassword);
-      await user.reauthenticateWithCredential(credential);
-      await user.updatePassword(newPassword);
+      showMessage('', '');
 
-      showMessage('비밀번호가 안전하게 변경됐어요.', 'success');
-      form.reset();
-    } catch (err) {
-      showMessage(passwordFriendlyError(err), 'error');
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = '비밀번호 변경';
+      const currentPassword = currentInput.value;
+      const newPassword = newInput.value;
+      const confirmPassword = confirmInput.value;
+
+      if (!currentPassword) {
+        showMessage('현재 비밀번호를 입력해주세요.', 'error');
+        return;
+      }
+      if (newPassword.length < 6) {
+        showMessage('새 비밀번호는 6자 이상이어야 해요.', 'error');
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        showMessage('새 비밀번호가 서로 일치하지 않아요.', 'error');
+        return;
+      }
+
+      const user = auth.currentUser;
+      if (!user) {
+        showMessage('로그인 정보를 확인할 수 없어요. 다시 로그인해주세요.', 'error');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = '변경 중...';
+
+      try {
+        const credential = firebase.auth.EmailAuthProvider.credential(user.email, currentPassword);
+        await user.reauthenticateWithCredential(credential);
+        await user.updatePassword(newPassword);
+
+        showMessage('비밀번호가 안전하게 변경됐어요. 홈으로 이동할게요.', 'success');
+        form.reset();
+
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 1200);
+      } catch (err) {
+        console.error('[settings.js] 비밀번호 변경 실패:', err);
+        showMessage(passwordFriendlyError(err), 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '비밀번호 변경';
+      }
+    } catch (unexpectedErr) {
+      // 예상 못한 오류도 화면에 반드시 표시되도록 함 (버튼만 눌리고 아무 반응이
+      // 없어 보이는 상황을 방지)
+      console.error('[settings.js] 예상치 못한 오류:', unexpectedErr);
+      showMessage('오류가 발생했어요: ' + unexpectedErr.message, 'error');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '비밀번호 변경';
+      }
     }
   });
 });
