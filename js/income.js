@@ -1,15 +1,8 @@
-// income.js — 수입 입력 폼 + 내역 체크박스 선택/수정/삭제 로직 (localStorage 기반)
+// income.js — 수입 입력 폼 + 내역 체크박스 선택/수정/삭제 로직
+// Firestore(income_entries 컬렉션)를 실시간으로 구독해서 두 사람 화면이
+// 자동으로 동기화됩니다.
 
-const STORAGE_KEY = 'gagyebu_income_entries';
-
-// 기존 index.html 수입 내역과 동일한 초기 데이터 (최초 방문 시 1회만 사용)
-const SEED_ENTRIES = [
-  { date: '2024-05-20', category: '급여', amount: 2800000, memo: '5월 급여' },
-  { date: '2024-05-15', category: '부수입', amount: 250000, memo: '블로그 수익' },
-  { date: '2024-05-10', category: '용돈', amount: 300000, memo: '부모님 용돈' },
-  { date: '2024-05-05', category: '이자 수익', amount: 50000, memo: '예금 이자' },
-  { date: '2024-05-01', category: '기타 수입', amount: 450000, memo: '외주 프로젝트' },
-];
+const COLLECTION = 'income_entries';
 
 // 폼 필드 key → 내역 테이블에 표시될 항목명 매핑
 const FIELD_MAP = [
@@ -25,45 +18,7 @@ const FIELD_MAP = [
 // ---- 선택/편집 상태 (페이지 세션 동안만 유지) ----
 const selectedIds = new Set();
 let editingId = null;
-
-function genId() {
-  if (window.crypto && typeof window.crypto.randomUUID === 'function') {
-    return window.crypto.randomUUID();
-  }
-  return 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2);
-}
-
-function loadEntries() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  let entries;
-  if (!raw) {
-    entries = SEED_ENTRIES.slice();
-  } else {
-    try {
-      const parsed = JSON.parse(raw);
-      entries = Array.isArray(parsed) ? parsed : SEED_ENTRIES.slice();
-    } catch (e) {
-      entries = SEED_ENTRIES.slice();
-    }
-  }
-
-  // id가 없는 항목(초기 seed 등)에는 id를 부여하고 즉시 저장해 이후에도 안정적으로 유지
-  let needsSave = false;
-  entries = entries.map((entry) => {
-    if (!entry.id) {
-      needsSave = true;
-      return { ...entry, id: genId() };
-    }
-    return entry;
-  });
-  if (needsSave) saveEntries(entries);
-
-  return entries;
-}
-
-function saveEntries(entries) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-}
+let currentEntries = [];
 
 function formatWon(amount) {
   return Number(amount).toLocaleString('ko-KR') + '원';
@@ -80,6 +35,12 @@ function renderTable(entries) {
   if (!tbody) return;
 
   const sorted = entries.slice().sort((a, b) => (a.date < b.date ? 1 : -1));
+
+  if (sorted.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">아직 등록된 내역이 없어요</td></tr>`;
+    updateActionBar();
+    return;
+  }
 
   tbody.innerHTML = sorted.map((entry) => {
     if (entry.id === editingId) {
@@ -160,7 +121,7 @@ function initForm() {
 
   form.addEventListener('input', updateTotalDisplay);
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     const date = (dateInput && dateInput.value) || new Date().toISOString().slice(0, 10);
@@ -175,7 +136,6 @@ function initForm() {
       })
       .filter((row) => row.amount > 0)
       .map((row) => ({
-        id: genId(),
         date,
         category: row.field.category,
         amount: row.amount,
@@ -187,13 +147,29 @@ function initForm() {
       return;
     }
 
-    const entries = loadEntries().concat(newEntries);
-    saveEntries(entries);
-    renderTable(entries);
+    const submitBtn = form.querySelector('.save-btn');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '저장 중...'; }
 
-    form.reset();
-    dateInput.value = date;
-    updateTotalDisplay();
+    try {
+      const batch = db.batch();
+      newEntries.forEach((entry) => {
+        const ref = db.collection(COLLECTION).doc();
+        batch.set(ref, {
+          ...entry,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          createdBy: auth.currentUser ? auth.currentUser.email : null,
+        });
+      });
+      await batch.commit();
+
+      form.reset();
+      dateInput.value = date;
+      updateTotalDisplay();
+    } catch (err) {
+      alert('저장 중 오류가 발생했어요: ' + err.message);
+    } finally {
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '저장하기'; }
+    }
   });
 
   updateTotalDisplay();
@@ -220,7 +196,7 @@ function initTableInteractions() {
     }
   });
 
-  tbody.addEventListener('click', (event) => {
+  tbody.addEventListener('click', async (event) => {
     const saveBtn = event.target.closest('.row-save-btn');
     const cancelBtn = event.target.closest('.row-cancel-btn');
 
@@ -237,18 +213,18 @@ function initTableInteractions() {
         return;
       }
 
-      const entries = loadEntries().map((entry) =>
-        entry.id === id ? { ...entry, date, category, amount, memo } : entry
-      );
-      saveEntries(entries);
-      editingId = null;
-      selectedIds.clear();
-      renderTable(entries);
+      try {
+        await db.collection(COLLECTION).doc(id).update({ date, category, amount, memo });
+        editingId = null;
+        selectedIds.clear();
+      } catch (err) {
+        alert('수정 중 오류가 발생했어요: ' + err.message);
+      }
     }
 
     if (cancelBtn) {
       editingId = null;
-      renderTable(loadEntries());
+      renderTable(currentEntries);
     }
   });
 
@@ -270,7 +246,7 @@ function initTableInteractions() {
       if (selectedIds.size !== 1) return;
       editingId = [...selectedIds][0];
       selectedIds.clear();
-      renderTable(loadEntries());
+      renderTable(currentEntries);
     });
   }
 
@@ -284,12 +260,16 @@ function initTableInteractions() {
 
 // ---- 삭제 확인 모달 ----
 
-function performDelete() {
-  const entries = loadEntries().filter((entry) => !selectedIds.has(entry.id));
-  saveEntries(entries);
-  selectedIds.clear();
-  if (editingId && !entries.some((e) => e.id === editingId)) editingId = null;
-  renderTable(entries);
+async function performDelete() {
+  try {
+    const batch = db.batch();
+    selectedIds.forEach((id) => batch.delete(db.collection(COLLECTION).doc(id)));
+    await batch.commit();
+    selectedIds.clear();
+    editingId = null;
+  } catch (err) {
+    alert('삭제 중 오류가 발생했어요: ' + err.message);
+  }
 }
 
 function openDeleteModal() {
@@ -332,8 +312,19 @@ function initDeleteModal() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  renderTable(loadEntries());
   initForm();
   initTableInteractions();
   initDeleteModal();
+
+  window.authReady.then((user) => {
+    if (!user) return; // auth-guard.js가 로그인 페이지로 이동시킴
+
+    db.collection(COLLECTION).onSnapshot((snapshot) => {
+      currentEntries = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      renderTable(currentEntries);
+    }, (err) => {
+      console.error(err);
+      alert('데이터를 불러오는 중 오류가 발생했어요: ' + err.message);
+    });
+  });
 });

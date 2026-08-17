@@ -1,25 +1,21 @@
-// expense.js — 지출 입력 폼 + 내역 체크박스 선택/수정/삭제 로직 (localStorage 기반)
+// expense.js — 지출 입력 폼 + 내역 체크박스 선택/수정/삭제 + 자동이체일 설정
+// Firestore(expense_entries 컬렉션)를 실시간으로 구독해서 두 사람 화면이
+// 자동으로 동기화됩니다. 자동이체 설정은 auto_debit_settings 컬렉션에 저장되고,
+// expense.html이 열려 있는 날 중 설정한 날짜가 되면 자동으로 지출 내역이 추가됩니다.
+// (브라우저를 열어야 실행되는 방식이라, 그 날 한 번도 접속하지 않으면
+//  다음 접속 시 자동으로 채워집니다.)
 
-const STORAGE_KEY = 'gagyebu_expense_entries';
-const AUTO_DEBIT_KEY = 'gagyebu_expense_autodebit';
+const COLLECTION = 'expense_entries';
+const AUTO_DEBIT_COLLECTION = 'auto_debit_settings';
 
-// 기존 index.html 지출 내역과 동일한 초기 데이터 (최초 방문 시 1회만 사용)
-const SEED_ENTRIES = [
-  { date: '2024-05-20', category: '식비', amount: 350000, memo: '마트 장보기' },
-  { date: '2024-05-18', category: '교통비', amount: 80000, memo: '주유비' },
-  { date: '2024-05-15', category: '쇼핑', amount: 200000, memo: '의류 구매' },
-  { date: '2024-05-12', category: '통신비', amount: 70000, memo: '핸드폰 요금' },
-  { date: '2024-05-10', category: '문화/여가', amount: 120000, memo: '영화 관람' },
-];
-
-// 폼 필드 key → 내역 테이블 항목명 / 소계 그룹 / 기본 금액 매핑
+// 폼 필드 key → { category(표시명), section(소계 그룹) } 매핑
 const FIELD_MAP = [
-  // 1. 적금
-  { key: 'nh-life', category: '농협생명보험 (적금·농협)', section: 'savings' },
-  { key: 'hana-cheongyak', category: '청약통장 (적금·하나)', section: 'savings' },
-  { key: 'hana-sonnimcare', category: '손님캐어 적금 (적금·하나)', section: 'savings' },
+  // 적금
+  { key: 'nh-life', category: '농협생명보험 (적금)', section: 'savings' },
+  { key: 'hana-cheongyak', category: '청약통장 (적금)', section: 'savings' },
+  { key: 'hana-sonnimcare', category: '손님캐어 적금', section: 'savings' },
 
-  // 2. 고정지출 - 헌금
+  // 고정지출 - 헌금
   { key: 'offer-tithe', category: '십일조 (헌금)', section: 'fixed' },
   { key: 'offer-season', category: '절기헌금', section: 'fixed' },
   { key: 'offer-building', category: '건축헌금', section: 'fixed' },
@@ -27,37 +23,37 @@ const FIELD_MAP = [
   { key: 'offer-region', category: '지역회비', section: 'fixed' },
   { key: 'offer-cheonji', category: '천지일보', section: 'fixed' },
 
-  // 2. 고정지출 - 보험료
+  // 고정지출 - 보험료
   { key: 'ins-hyundai', category: '현대해상 (보험료)', section: 'fixed' },
   { key: 'ins-yebyeol1', category: '예별손1 (보험료)', section: 'fixed' },
   { key: 'ins-yebyeol2', category: '예별손2 (보험료)', section: 'fixed' },
-  { key: 'ins-axa', category: 'AXA 운전자보험', section: 'fixed' },
+  { key: 'ins-axa', category: 'AXA 운전자보험 (보험료)', section: 'fixed' },
   { key: 'ins-woongjin', category: '웅진프라이드 (보험료)', section: 'fixed' },
   { key: 'ins-hyundai-care', category: '현대해상 간병 (보험료)', section: 'fixed' },
 
-  // 2. 고정지출 - 할부
+  // 고정지출 - 할부
   { key: 'installment-car', category: '자동차 할부', section: 'fixed' },
   { key: 'installment-car-ins', category: '자동차 보험 (할부)', section: 'fixed' },
 
-  // 2. 고정지출 - 기타 고정
+  // 고정지출 - 기타
   { key: 'phone-bill', category: '핸드폰요금', section: 'fixed' },
   { key: 'naver-store', category: '네이버스토어', section: 'fixed' },
   { key: 'hwanhee-allowance', category: '환희 용돈', section: 'fixed' },
 
-  // 2. 고정지출 - 공과금
+  // 고정지출 - 공과금
   { key: 'util-tv', category: 'TV (공과금)', section: 'fixed' },
   { key: 'util-electric', category: '전기 (공과금)', section: 'fixed' },
   { key: 'util-gas', category: '가스 (공과금)', section: 'fixed' },
 
-  // 2. 고정지출 - 대출상환
-  { key: 'loan-principal', category: '원금 (대출상환)', section: 'fixed' },
-  { key: 'loan-interest', category: '대출이자 (대출상환)', section: 'fixed' },
+  // 고정지출 - 대출상환
+  { key: 'loan-principal', category: '대출 원금', section: 'fixed' },
+  { key: 'loan-interest', category: '대출 이자', section: 'fixed' },
 
-  // 3. 필수지출
+  // 필수지출
   { key: 'gas-charge', category: '가스충전', section: 'essential' },
   { key: 'jongho-meal', category: '종호 밥', section: 'essential' },
 
-  // 4. 일반지출
+  // 일반지출
   { key: 'mart', category: '마트', section: 'general' },
   { key: 'cafe', category: '카페', section: 'general' },
   { key: 'online', category: '온라인', section: 'general' },
@@ -65,48 +61,12 @@ const FIELD_MAP = [
   { key: 'etc', category: '기타', section: 'general' },
 ];
 
-// ---- 선택/편집 상태 (페이지 세션 동안만 유지) ----
+// ---- 선택/편집 상태 ----
 const selectedIds = new Set();
 let editingId = null;
-
-function genId() {
-  if (window.crypto && typeof window.crypto.randomUUID === 'function') {
-    return window.crypto.randomUUID();
-  }
-  return 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2);
-}
-
-function loadEntries() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  let entries;
-  if (!raw) {
-    entries = SEED_ENTRIES.slice();
-  } else {
-    try {
-      const parsed = JSON.parse(raw);
-      entries = Array.isArray(parsed) ? parsed : SEED_ENTRIES.slice();
-    } catch (e) {
-      entries = SEED_ENTRIES.slice();
-    }
-  }
-
-  // id가 없는 항목(초기 seed 등)에는 id를 부여하고 즉시 저장해 이후에도 안정적으로 유지
-  let needsSave = false;
-  entries = entries.map((entry) => {
-    if (!entry.id) {
-      needsSave = true;
-      return { ...entry, id: genId() };
-    }
-    return entry;
-  });
-  if (needsSave) saveEntries(entries);
-
-  return entries;
-}
-
-function saveEntries(entries) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-}
+let currentEntries = [];
+let autoDebitSettings = {}; // { [key]: { day, amount, lastRunMonth } }
+let activePopoverKey = null;
 
 function formatWon(amount) {
   return Number(amount).toLocaleString('ko-KR') + '원';
@@ -118,11 +78,24 @@ function escapeHtml(str) {
   }[ch]));
 }
 
+function currentYearMonth() {
+  const today = new Date();
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+}
+
+// ---- 내역 테이블 렌더 ----
+
 function renderTable(entries) {
   const tbody = document.getElementById('expense-table-body');
   if (!tbody) return;
 
   const sorted = entries.slice().sort((a, b) => (a.date < b.date ? 1 : -1));
+
+  if (sorted.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">아직 등록된 내역이 없어요</td></tr>`;
+    updateActionBar();
+    return;
+  }
 
   tbody.innerHTML = sorted.map((entry) => {
     if (entry.id === editingId) {
@@ -144,11 +117,12 @@ function renderTable(entries) {
     }
 
     const checked = selectedIds.has(entry.id) ? 'checked' : '';
+    const autoTag = entry.autoKey ? ' <span style="color:var(--text-muted);font-size:11px;">(자동)</span>' : '';
     return `
       <tr data-id="${entry.id}">
         <td class="col-check"><input type="checkbox" class="row-check" data-id="${entry.id}" ${checked}></td>
         <td>${escapeHtml(entry.date)}</td>
-        <td>${escapeHtml(entry.category)}</td>
+        <td>${escapeHtml(entry.category)}${autoTag}</td>
         <td class="expense">-${formatWon(entry.amount)}</td>
         <td>${escapeHtml(entry.memo || '')}</td>
       </tr>
@@ -176,10 +150,10 @@ function updateActionBar() {
 // ---- 입력 폼 (상단) ----
 
 function getField(key) {
-  return document.querySelector(`#expense-form [data-key="${key}"]`);
+  return document.querySelector(`[data-key="${key}"]`);
 }
 
-function calcSectionTotal(section) {
+function calcSectionSubtotal(section) {
   return FIELD_MAP
     .filter((field) => field.section === section)
     .reduce((sum, field) => {
@@ -201,9 +175,9 @@ function updateTotalDisplay() {
   const totalEl = document.getElementById('expense-total');
   if (totalEl) totalEl.textContent = formatWon(calcTotal());
 
-  ['savings', 'fixed', 'essential', 'general'].forEach((section) => {
-    const el = document.querySelector(`[data-subtotal-for="${section}"]`);
-    if (el) el.textContent = formatWon(calcSectionTotal(section));
+  document.querySelectorAll('[data-subtotal-for]').forEach((el) => {
+    const section = el.dataset.subtotalFor;
+    el.textContent = formatWon(calcSectionSubtotal(section));
   });
 }
 
@@ -218,7 +192,7 @@ function initForm() {
 
   form.addEventListener('input', updateTotalDisplay);
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     const date = (dateInput && dateInput.value) || new Date().toISOString().slice(0, 10);
@@ -233,7 +207,6 @@ function initForm() {
       })
       .filter((row) => row.amount > 0)
       .map((row) => ({
-        id: genId(),
         date,
         category: row.field.category,
         amount: row.amount,
@@ -245,236 +218,35 @@ function initForm() {
       return;
     }
 
-    const entries = loadEntries().concat(newEntries);
-    saveEntries(entries);
-    renderTable(entries);
+    const submitBtn = form.querySelector('.save-btn');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '저장 중...'; }
 
-    // 저장 후 폼은 초기화하되, 매번 다시 채우기 번거로운 고정 지출 항목은
-    // 기본값(원본 참고 금액)으로 되돌려 다음 입력에 대비합니다.
-    form.reset();
-    dateInput.value = date;
-    updateTotalDisplay();
+    try {
+      const batch = db.batch();
+      newEntries.forEach((entry) => {
+        const ref = db.collection(COLLECTION).doc();
+        batch.set(ref, {
+          ...entry,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          createdBy: auth.currentUser ? auth.currentUser.email : null,
+        });
+      });
+      await batch.commit();
+
+      form.reset();
+      dateInput.value = date;
+      updateTotalDisplay();
+    } catch (err) {
+      alert('저장 중 오류가 발생했어요: ' + err.message);
+    } finally {
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '저장하기'; }
+    }
   });
 
   updateTotalDisplay();
 }
 
-// ---- 자동이체 설정 (적금·고정지출 항목별 이체일) ----
-
-function loadAutoDebitSettings() {
-  const raw = localStorage.getItem(AUTO_DEBIT_KEY);
-  if (!raw) return {};
-  try {
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === 'object' ? parsed : {};
-  } catch (e) {
-    return {};
-  }
-}
-
-function saveAutoDebitSettings(settings) {
-  localStorage.setItem(AUTO_DEBIT_KEY, JSON.stringify(settings));
-}
-
-function currentYearMonth(date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-}
-
-// 저장된 자동이체일 값으로 각 트리거 버튼의 라벨/스타일을 갱신
-function refreshAutoDebitTriggers() {
-  const settings = loadAutoDebitSettings();
-
-  document.querySelectorAll('.auto-debit-trigger').forEach((btn) => {
-    const key = btn.dataset.autoKey;
-    const textEl = btn.querySelector('.auto-debit-text');
-    const saved = settings[key];
-
-    if (saved && saved.day) {
-      btn.classList.add('is-set');
-      if (textEl) textEl.textContent = `매월 ${saved.day}일`;
-    } else {
-      btn.classList.remove('is-set');
-      if (textEl) textEl.textContent = '이체일 설정';
-    }
-  });
-}
-
-// 팝오버 안에 1~31 날짜 그리드를 한 번만 만들어둠
-function buildAutoDebitGrid() {
-  const grid = document.getElementById('auto-debit-popover-grid');
-  if (!grid || grid.childElementCount > 0) return;
-
-  for (let day = 1; day <= 31; day += 1) {
-    const cell = document.createElement('div');
-    cell.className = 'auto-debit-day-cell';
-    cell.textContent = String(day);
-    cell.dataset.day = String(day);
-    grid.appendChild(cell);
-  }
-}
-
-let activeAutoDebitKey = null;
-
-function positionAutoDebitPopover(trigger) {
-  const popover = document.getElementById('auto-debit-popover');
-  if (!popover || !trigger) return;
-
-  const rect = trigger.getBoundingClientRect();
-  const popoverWidth = popover.offsetWidth || 240;
-  const margin = 12;
-
-  let left = rect.left;
-  if (left + popoverWidth > window.innerWidth - margin) {
-    left = window.innerWidth - margin - popoverWidth;
-  }
-  if (left < margin) left = margin;
-
-  let top = rect.bottom + 8;
-  const popoverHeight = popover.offsetHeight || 260;
-  if (top + popoverHeight > window.innerHeight - margin) {
-    top = rect.top - popoverHeight - 8;
-  }
-
-  popover.style.left = `${left}px`;
-  popover.style.top = `${top}px`;
-}
-
-function openAutoDebitPopover(trigger) {
-  const key = trigger.dataset.autoKey;
-  const popover = document.getElementById('auto-debit-popover');
-  const title = document.getElementById('auto-debit-popover-title');
-  if (!popover) return;
-
-  activeAutoDebitKey = key;
-
-  const fieldLabel = trigger.closest('.form-field')?.querySelector('span')?.textContent || '';
-  if (title) title.textContent = fieldLabel ? `자동이체일 · ${fieldLabel}` : '자동이체일 선택';
-
-  const settings = loadAutoDebitSettings();
-  const savedDay = settings[key] && settings[key].day;
-
-  document.querySelectorAll('.auto-debit-day-cell').forEach((cell) => {
-    cell.classList.toggle('is-selected', Number(cell.dataset.day) === savedDay);
-  });
-
-  popover.classList.add('is-open');
-  positionAutoDebitPopover(trigger);
-}
-
-function closeAutoDebitPopover() {
-  const popover = document.getElementById('auto-debit-popover');
-  if (popover) popover.classList.remove('is-open');
-  activeAutoDebitKey = null;
-}
-
-function selectAutoDebitDay(day) {
-  if (!activeAutoDebitKey) return;
-  const settings = loadAutoDebitSettings();
-  settings[activeAutoDebitKey] = { ...(settings[activeAutoDebitKey] || {}), day };
-  saveAutoDebitSettings(settings);
-  refreshAutoDebitTriggers();
-  closeAutoDebitPopover();
-}
-
-function clearAutoDebitDay() {
-  if (!activeAutoDebitKey) return;
-  const settings = loadAutoDebitSettings();
-  delete settings[activeAutoDebitKey];
-  saveAutoDebitSettings(settings);
-  refreshAutoDebitTriggers();
-  closeAutoDebitPopover();
-}
-
-function initAutoDebitUI() {
-  buildAutoDebitGrid();
-  refreshAutoDebitTriggers();
-
-  document.querySelectorAll('.auto-debit-trigger').forEach((trigger) => {
-    trigger.addEventListener('click', (event) => {
-      event.stopPropagation();
-      openAutoDebitPopover(trigger);
-    });
-  });
-
-  const grid = document.getElementById('auto-debit-popover-grid');
-  if (grid) {
-    grid.addEventListener('click', (event) => {
-      const cell = event.target.closest('.auto-debit-day-cell');
-      if (cell) selectAutoDebitDay(Number(cell.dataset.day));
-    });
-  }
-
-  const closeBtn = document.getElementById('auto-debit-popover-close');
-  if (closeBtn) closeBtn.addEventListener('click', closeAutoDebitPopover);
-
-  const clearBtn = document.getElementById('auto-debit-popover-clear');
-  if (clearBtn) clearBtn.addEventListener('click', clearAutoDebitDay);
-
-  document.addEventListener('click', (event) => {
-    const popover = document.getElementById('auto-debit-popover');
-    if (!popover || !popover.classList.contains('is-open')) return;
-    if (!popover.contains(event.target)) closeAutoDebitPopover();
-  });
-
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeAutoDebitPopover();
-  });
-
-  window.addEventListener('resize', () => {
-    const popover = document.getElementById('auto-debit-popover');
-    if (popover && popover.classList.contains('is-open') && activeAutoDebitKey) {
-      const trigger = document.querySelector(`.auto-debit-trigger[data-auto-key="${activeAutoDebitKey}"]`);
-      if (trigger) positionAutoDebitPopover(trigger);
-    }
-  });
-}
-
-
-
-// 오늘이 자동이체일이 된 항목을, 이번 달에 아직 처리 안 했다면 지출 내역에 자동 추가
-function runAutoDebitCheck() {
-  const settings = loadAutoDebitSettings();
-  const today = new Date();
-  const ym = currentYearMonth(today);
-  const todayDay = today.getDate();
-
-  let entries = loadEntries();
-  let settingsChanged = false;
-  let entriesChanged = false;
-
-  FIELD_MAP.forEach((field) => {
-    const cfg = settings[field.key];
-    if (!cfg || !cfg.day) return;
-    if (cfg.lastAppliedYm === ym) return; // 이번 달엔 이미 처리됨
-    if (todayDay < cfg.day) return; // 아직 이체일이 안 됨
-
-    const input = getField(field.key);
-    const amount = input ? Number(input.value) || 0 : 0;
-    if (amount <= 0) return;
-
-    const dateStr = `${ym}-${String(cfg.day).padStart(2, '0')}`;
-
-    entries = entries.concat([{
-      id: genId(),
-      date: dateStr,
-      category: field.category,
-      amount,
-      memo: '자동이체',
-    }]);
-
-    cfg.lastAppliedYm = ym;
-    settingsChanged = true;
-    entriesChanged = true;
-  });
-
-  if (settingsChanged) saveAutoDebitSettings(settings);
-  if (entriesChanged) {
-    saveEntries(entries);
-    renderTable(entries);
-  }
-}
-
-
+// ---- 내역 테이블: 체크박스 선택 / 수정 / 삭제 ----
 
 function initTableInteractions() {
   const tbody = document.getElementById('expense-table-body');
@@ -486,7 +258,6 @@ function initTableInteractions() {
 
   tbody.addEventListener('change', (event) => {
     const target = event.target;
-
     if (target.classList.contains('row-check')) {
       const id = target.dataset.id;
       if (target.checked) selectedIds.add(id);
@@ -495,7 +266,7 @@ function initTableInteractions() {
     }
   });
 
-  tbody.addEventListener('click', (event) => {
+  tbody.addEventListener('click', async (event) => {
     const saveBtn = event.target.closest('.row-save-btn');
     const cancelBtn = event.target.closest('.row-cancel-btn');
 
@@ -512,18 +283,18 @@ function initTableInteractions() {
         return;
       }
 
-      const entries = loadEntries().map((entry) =>
-        entry.id === id ? { ...entry, date, category, amount, memo } : entry
-      );
-      saveEntries(entries);
-      editingId = null;
-      selectedIds.clear();
-      renderTable(entries);
+      try {
+        await db.collection(COLLECTION).doc(id).update({ date, category, amount, memo });
+        editingId = null;
+        selectedIds.clear();
+      } catch (err) {
+        alert('수정 중 오류가 발생했어요: ' + err.message);
+      }
     }
 
     if (cancelBtn) {
       editingId = null;
-      renderTable(loadEntries());
+      renderTable(currentEntries);
     }
   });
 
@@ -545,7 +316,7 @@ function initTableInteractions() {
       if (selectedIds.size !== 1) return;
       editingId = [...selectedIds][0];
       selectedIds.clear();
-      renderTable(loadEntries());
+      renderTable(currentEntries);
     });
   }
 
@@ -559,12 +330,16 @@ function initTableInteractions() {
 
 // ---- 삭제 확인 모달 ----
 
-function performDelete() {
-  const entries = loadEntries().filter((entry) => !selectedIds.has(entry.id));
-  saveEntries(entries);
-  selectedIds.clear();
-  if (editingId && !entries.some((e) => e.id === editingId)) editingId = null;
-  renderTable(entries);
+async function performDelete() {
+  try {
+    const batch = db.batch();
+    selectedIds.forEach((id) => batch.delete(db.collection(COLLECTION).doc(id)));
+    await batch.commit();
+    selectedIds.clear();
+    editingId = null;
+  } catch (err) {
+    alert('삭제 중 오류가 발생했어요: ' + err.message);
+  }
 }
 
 function openDeleteModal() {
@@ -592,13 +367,10 @@ function initDeleteModal() {
     performDelete();
     closeDeleteModal();
   });
-
   cancelBtn.addEventListener('click', closeDeleteModal);
-
   modal.addEventListener('click', (event) => {
     if (event.target === modal) closeDeleteModal();
   });
-
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && modal.classList.contains('is-open')) {
       closeDeleteModal();
@@ -606,11 +378,200 @@ function initDeleteModal() {
   });
 }
 
+// ---- 자동이체일 설정 (팝오버) ----
+
+function updateAutoDebitButtonLabel(key) {
+  const textEl = document.querySelector(`[data-auto-text="${key}"]`);
+  const btn = document.querySelector(`[data-auto-key="${key}"]`);
+  const setting = autoDebitSettings[key];
+
+  if (textEl) textEl.textContent = setting && setting.day ? `매월 ${setting.day}일` : '이체일 설정';
+  if (btn) btn.classList.toggle('is-set', !!(setting && setting.day));
+}
+
+function renderAllAutoDebitLabels() {
+  FIELD_MAP.forEach((field) => updateAutoDebitButtonLabel(field.key));
+}
+
+function buildDayGrid(selectedDay) {
+  const grid = document.getElementById('auto-debit-popover-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  for (let day = 1; day <= 31; day++) {
+    const cell = document.createElement('div');
+    cell.className = 'auto-debit-day-cell' + (day === selectedDay ? ' is-selected' : '');
+    cell.textContent = day;
+    cell.dataset.day = String(day);
+    grid.appendChild(cell);
+  }
+}
+
+function positionPopover(triggerEl) {
+  const popover = document.getElementById('auto-debit-popover');
+  if (!popover || !triggerEl) return;
+
+  const rect = triggerEl.getBoundingClientRect();
+  const popoverWidth = 240;
+  let left = rect.left;
+  if (left + popoverWidth > window.innerWidth - 16) {
+    left = window.innerWidth - popoverWidth - 16;
+  }
+  popover.style.top = `${rect.bottom + 8}px`;
+  popover.style.left = `${Math.max(16, left)}px`;
+}
+
+function openAutoDebitPopover(key, triggerEl) {
+  const popover = document.getElementById('auto-debit-popover');
+  const title = document.getElementById('auto-debit-popover-title');
+  if (!popover) return;
+
+  activePopoverKey = key;
+  const field = FIELD_MAP.find((f) => f.key === key);
+  if (title && field) title.textContent = `${field.category} · 이체일 선택`;
+
+  const currentDay = autoDebitSettings[key] ? autoDebitSettings[key].day : null;
+  buildDayGrid(currentDay);
+  positionPopover(triggerEl);
+  popover.classList.add('is-open');
+}
+
+function closeAutoDebitPopover() {
+  const popover = document.getElementById('auto-debit-popover');
+  if (popover) popover.classList.remove('is-open');
+  activePopoverKey = null;
+}
+
+async function saveAutoDebitDay(key, day) {
+  const field = FIELD_MAP.find((f) => f.key === key);
+  const input = getField(key);
+  const amount = input ? Number(input.value) || 0 : 0;
+
+  try {
+    await db.collection(AUTO_DEBIT_COLLECTION).doc(key).set({
+      key,
+      category: field ? field.category : key,
+      day,
+      amount,
+    }, { merge: true });
+  } catch (err) {
+    alert('자동이체일 저장 중 오류가 발생했어요: ' + err.message);
+  }
+}
+
+async function clearAutoDebitDay(key) {
+  try {
+    await db.collection(AUTO_DEBIT_COLLECTION).doc(key).delete();
+  } catch (err) {
+    alert('자동이체일 해제 중 오류가 발생했어요: ' + err.message);
+  }
+}
+
+function initAutoDebitPopover() {
+  const triggers = document.querySelectorAll('.auto-debit-trigger');
+  const popover = document.getElementById('auto-debit-popover');
+  const closeBtn = document.getElementById('auto-debit-popover-close');
+  const grid = document.getElementById('auto-debit-popover-grid');
+  const clearBtn = document.getElementById('auto-debit-popover-clear');
+
+  triggers.forEach((trigger) => {
+    trigger.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const key = trigger.dataset.autoKey;
+      if (activePopoverKey === key) {
+        closeAutoDebitPopover();
+      } else {
+        openAutoDebitPopover(key, trigger);
+      }
+    });
+  });
+
+  if (grid) {
+    grid.addEventListener('click', (event) => {
+      const cell = event.target.closest('.auto-debit-day-cell');
+      if (!cell || !activePopoverKey) return;
+      const day = Number(cell.dataset.day);
+      saveAutoDebitDay(activePopoverKey, day);
+      closeAutoDebitPopover();
+    });
+  }
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      if (!activePopoverKey) return;
+      clearAutoDebitDay(activePopoverKey);
+      closeAutoDebitPopover();
+    });
+  }
+
+  if (closeBtn) closeBtn.addEventListener('click', closeAutoDebitPopover);
+
+  document.addEventListener('click', (event) => {
+    if (popover && popover.classList.contains('is-open') && !popover.contains(event.target)) {
+      closeAutoDebitPopover();
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (activePopoverKey) closeAutoDebitPopover();
+  });
+}
+
+// 매달 설정한 날짜가 되면(오늘 = day, 이번 달에 아직 미실행) 자동으로 지출 내역 생성
+async function runAutoDebitCheck() {
+  const today = new Date();
+  const todayDay = today.getDate();
+  const ym = currentYearMonth();
+
+  const dueSettings = Object.values(autoDebitSettings).filter((setting) => (
+    setting.day === todayDay && setting.lastRunMonth !== ym && Number(setting.amount) > 0
+  ));
+
+  if (dueSettings.length === 0) return;
+
+  try {
+    const batch = db.batch();
+    dueSettings.forEach((setting) => {
+      const entryRef = db.collection(COLLECTION).doc();
+      batch.set(entryRef, {
+        date: today.toISOString().slice(0, 10),
+        category: setting.category,
+        amount: setting.amount,
+        memo: '자동이체',
+        autoKey: setting.key,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        createdBy: auth.currentUser ? auth.currentUser.email : null,
+      });
+      const settingRef = db.collection(AUTO_DEBIT_COLLECTION).doc(setting.key);
+      batch.set(settingRef, { lastRunMonth: ym }, { merge: true });
+    });
+    await batch.commit();
+  } catch (err) {
+    console.error('자동이체 처리 중 오류:', err);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  renderTable(loadEntries());
   initForm();
   initTableInteractions();
   initDeleteModal();
-  initAutoDebitUI();
-  runAutoDebitCheck();
+  initAutoDebitPopover();
+
+  window.authReady.then((user) => {
+    if (!user) return; // auth-guard.js가 로그인 페이지로 이동시킴
+
+    db.collection(COLLECTION).onSnapshot((snapshot) => {
+      currentEntries = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      renderTable(currentEntries);
+    }, (err) => {
+      console.error(err);
+      alert('데이터를 불러오는 중 오류가 발생했어요: ' + err.message);
+    });
+
+    db.collection(AUTO_DEBIT_COLLECTION).onSnapshot((snapshot) => {
+      autoDebitSettings = {};
+      snapshot.docs.forEach((doc) => { autoDebitSettings[doc.id] = doc.data(); });
+      renderAllAutoDebitLabels();
+      runAutoDebitCheck();
+    });
+  });
 });
