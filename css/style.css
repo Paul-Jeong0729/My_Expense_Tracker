@@ -421,6 +421,29 @@ td.expense { color: var(--expense); font-weight: 600; }
 
 .form-field .etc-memo { margin-top: 6px; }
 
+/* 지출 페이지: 금액 입력칸을 1/3로 줄이고, 이체일 버튼을 같은 줄 오른쪽에 배치 */
+.expense-form-card .form-field {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 6px;
+}
+
+.expense-form-card .form-field span {
+  flex: 0 0 100%;
+}
+
+.expense-form-card .form-field input[type="number"] {
+  flex: 0 1 33%;
+  width: 33%;
+  min-width: 64px;
+}
+
+.expense-form-card .form-field .auto-debit-trigger {
+  flex: 0 0 auto;
+}
+
 .form-footer {
   margin-top: 28px;
   padding-top: 20px;
@@ -532,6 +555,54 @@ td.expense { color: var(--expense); font-weight: 600; }
   margin-left: 6px;
 }
 
+/* 일반지출: 항목을 세로로 나열하고, 금액칸(1/3) 오른쪽에 메모칸을 배치 */
+.form-field-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-field-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-field-row-label {
+  flex: 0 0 64px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.form-field-row-amount {
+  flex: 0 1 33%;
+  min-width: 64px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-main);
+  outline: none;
+  transition: border-color .15s ease;
+}
+
+.form-field-row-memo {
+  flex: 1 1 auto;
+  font-family: var(--font-body);
+  font-size: 15px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-main);
+  outline: none;
+  transition: border-color .15s ease;
+  min-width: 0;
+}
+
+.form-field-row-amount:focus,
+.form-field-row-memo:focus { border-color: var(--brand); }
+
 .auto-debit-hint {
   font-size: 13px;
   color: var(--text-muted);
@@ -542,20 +613,21 @@ td.expense { color: var(--expense); font-weight: 600; }
   line-height: 1.5;
 }
 
-/* 자동이체일 트리거 버튼 */
+/* 자동이체일 트리거 버튼 - 달력 아이콘만 표시되는 원형 버튼 */
 .auto-debit-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  margin-top: 8px;
-  padding: 5px 10px;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  margin-top: 0;
+  flex-shrink: 0;
   font-family: var(--font-body);
-  font-size: 12px;
-  font-weight: 600;
   color: var(--text-muted);
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: 50%;
   cursor: pointer;
   transition: border-color .15s ease, color .15s ease, background .15s ease;
 }
@@ -571,7 +643,17 @@ td.expense { color: var(--expense); font-weight: 600; }
   color: var(--expense);
 }
 
-.auto-debit-icon { font-size: 12px; }
+.auto-debit-icon { font-size: 14px; }
+
+/* 텍스트 라벨은 버튼 title(툴팁)로 대체되므로 화면에는 숨김 */
+.auto-debit-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
 
 /* 자동이체일 선택 팝오버 (달력형 그리드) */
 .auto-debit-popover {
@@ -707,6 +789,10 @@ td.expense { color: var(--expense); font-weight: 600; }
 
 @media (max-width: 560px) {
   .form-field-grid { grid-template-columns: 1fr; }
+  .form-field-row { flex-wrap: wrap; }
+  .form-field-row-label { flex: 0 0 100%; }
+  .form-field-row-amount { flex: 0 1 33%; }
+  .form-field-row-memo { flex: 1 1 auto; }
 }
 
 /* ---------- Table selection / inline edit ---------- */
