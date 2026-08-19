@@ -555,52 +555,32 @@ td.expense { color: var(--expense); font-weight: 600; }
   margin-left: 6px;
 }
 
-/* 일반지출: 항목을 세로로 나열하고, 금액칸(1/3) 오른쪽에 메모칸을 배치 */
-.form-field-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.form-field-row {
+/* 일반지출: 원래 그리드 형태 유지, 금액 입력칸 오른쪽에 메모칸 배치 */
+.form-field-inline {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex: 1 1 100%;
+  width: 100%;
 }
 
-.form-field-row-label {
-  flex: 0 0 64px;
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-.form-field-row-amount {
-  flex: 0 1 33%;
-  min-width: 64px;
-  font-family: var(--font-body);
-  font-size: 15px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--text-main);
-  outline: none;
-  transition: border-color .15s ease;
-}
-
-.form-field-row-memo {
+.form-field .form-field-inline input[type="text"] {
+  width: auto;
   flex: 1 1 auto;
-  font-family: var(--font-body);
-  font-size: 15px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--text-main);
-  outline: none;
-  transition: border-color .15s ease;
   min-width: 0;
 }
 
-.form-field-row-amount:focus,
+.form-field-row-memo {
+  font-family: var(--font-body);
+  font-size: 15px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-main);
+  outline: none;
+  transition: border-color .15s ease;
+}
+
 .form-field-row-memo:focus { border-color: var(--brand); }
 
 .auto-debit-hint {
@@ -789,10 +769,7 @@ td.expense { color: var(--expense); font-weight: 600; }
 
 @media (max-width: 560px) {
   .form-field-grid { grid-template-columns: 1fr; }
-  .form-field-row { flex-wrap: wrap; }
-  .form-field-row-label { flex: 0 0 100%; }
-  .form-field-row-amount { flex: 0 1 33%; }
-  .form-field-row-memo { flex: 1 1 auto; }
+  .form-field-inline { flex-wrap: wrap; }
 }
 
 /* ---------- Table selection / inline edit ---------- */
