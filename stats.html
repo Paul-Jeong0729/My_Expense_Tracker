@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My 가계부 - 통계</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<main>
+  <section class="hero stats-hero">
+    <div class="hero-bg"></div>
+
+    <header class="nav">
+      <div class="nav-inner">
+        <div class="nav-left">
+          <div class="logo">
+            <span class="logo-icon">📘</span>
+            <span class="logo-text">My 가계부</span>
+          </div>
+
+          <nav class="nav-menu">
+            <a href="index.html" target="_blank" class="nav-link">홈</a>
+            <a href="income.html" target="_blank" class="nav-link">수입</a>
+            <a href="expense.html" target="_blank" class="nav-link">지출</a>
+          </nav>
+        </div>
+
+        <div class="nav-right">
+          <nav class="nav-menu">
+            <a href="stats.html" target="_blank" class="nav-link active">통계</a>
+            <a href="settings.html" target="_blank" class="nav-link">설정</a>
+          </nav>
+
+          <div class="user-menu" id="user-menu">
+            <span class="user-icon">👤</span>
+            <span class="user-greeting">사랑해요 양균님</span>
+            <span class="dropdown-arrow">⌄</span>
+
+            <div class="user-dropdown" id="user-dropdown">
+              <button type="button" class="user-dropdown-item logout" id="logout-btn">
+                <span class="user-dropdown-icon">🚪</span>
+                <span>로그아웃</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="hero-content">
+      <p class="hero-line1">이번 달 흐름을 한눈에 볼까요?</p>
+      <h1 class="hero-line2">통계</h1>
+      <p class="hero-line3">수입과 지출을 항목별로 비교하고, 저축 목표 달성률을 확인해보세요.</p>
+    </div>
+  </section>
+
+  <section class="stats-section">
+
+    <!-- 항목별 수입·지출 비교 -->
+    <div class="stats-card">
+      <div class="stats-card-header">
+        <h2>📊 항목별 수입·지출 비교</h2>
+        <div class="period-tabs" id="period-tabs">
+          <button type="button" class="period-tab active" data-mode="current">이번 달</button>
+          <button type="button" class="period-tab" data-mode="month">월 선택</button>
+          <button type="button" class="period-tab" data-mode="range">기간 설정</button>
+        </div>
+      </div>
+
+      <div class="period-controls">
+        <label class="period-control-field" id="month-pick-field" hidden>
+          <span>월 선택</span>
+          <input type="month" id="month-picker">
+        </label>
+        <div class="period-control-range" id="range-fields" hidden>
+          <label class="period-control-field">
+            <span>시작일</span>
+            <input type="date" id="range-start">
+          </label>
+          <label class="period-control-field">
+            <span>종료일</span>
+            <input type="date" id="range-end">
+          </label>
+        </div>
+      </div>
+
+      <div class="stats-summary-row">
+        <div class="stats-summary-chip income">
+          <span>총 수입</span>
+          <strong id="stats-total-income">0원</strong>
+        </div>
+        <div class="stats-summary-chip expense">
+          <span>총 지출</span>
+          <strong id="stats-total-expense">0원</strong>
+        </div>
+        <div class="stats-summary-chip balance">
+          <span>차액</span>
+          <strong id="stats-total-balance">0원</strong>
+        </div>
+      </div>
+
+      <div class="chart-legend">
+        <span class="legend-item"><i class="legend-dot income"></i>수입</span>
+        <span class="legend-item"><i class="legend-dot expense"></i>지출</span>
+      </div>
+
+      <div class="chart-wrap">
+        <canvas id="category-chart"></canvas>
+      </div>
+      <p class="chart-empty" id="chart-empty" hidden>선택한 기간에 등록된 내역이 없어요.</p>
+    </div>
+
+    <!-- 저축 목표 달성률 -->
+    <div class="stats-card">
+      <div class="stats-card-header">
+        <h2>🎯 저축 목표 달성률</h2>
+        <button type="button" class="goal-edit-btn" id="goal-edit-btn">목표 금액 설정</button>
+      </div>
+      <p class="goal-card-desc">적금·연금저축·개인형IRP로 지금까지 모은 금액을 목표 금액과 비교해요.</p>
+
+      <div class="goal-progress">
+        <div class="goal-progress-track">
+          <div class="goal-progress-fill" id="goal-progress-fill"></div>
+        </div>
+        <span class="goal-progress-percent" id="goal-progress-percent">0%</span>
+      </div>
+
+      <div class="goal-amounts">
+        <div class="goal-amount-item">
+          <span>지금까지 모은 금액</span>
+          <strong id="goal-current-amount">0원</strong>
+        </div>
+        <div class="goal-amount-item">
+          <span>목표 금액</span>
+          <strong id="goal-target-amount">아직 설정 안 함</strong>
+        </div>
+      </div>
+
+      <p class="goal-note">※ 지출 내역 중 적금·연금저축·개인형IRP 항목으로 기록된 모든 내역을 지금까지 누적으로 더한 금액이에요 (기간 선택과 무관하게 항상 전체 기간 기준).</p>
+    </div>
+
+  </section>
+</main>
+
+<div class="modal-overlay" id="goal-modal">
+  <div class="modal-card goal-modal-card">
+    <div class="modal-icon">🎯</div>
+    <h3 class="modal-title">목표 금액 설정</h3>
+    <p class="modal-message">적금·연금저축·개인형IRP를 합쳐 얼마를 모으고 싶으신가요?</p>
+
+    <label class="settings-field goal-modal-field">
+      <span>목표 금액 (원)</span>
+      <input type="number" inputmode="numeric" min="0" placeholder="예: 50000000" id="goal-target-input">
+    </label>
+
+    <p class="settings-message" id="goal-modal-message"></p>
+
+    <div class="modal-actions">
+      <button type="button" class="modal-btn cancel" id="goal-modal-cancel">취소</button>
+      <button type="button" class="modal-btn confirm" id="goal-modal-save">저장할게요</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth-guard.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="js/stats.js"></script>
+</body>
+</html>
