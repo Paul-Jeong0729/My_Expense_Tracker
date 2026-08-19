@@ -765,6 +765,15 @@ td.expense { color: var(--expense); font-weight: 600; }
   .settings-hero .hero-content { padding-top: 90px; }
   .settings-section { margin: -20px 20px 40px; }
   .settings-card { padding: 28px 24px; }
+
+  .stats-hero { padding-bottom: 60px; }
+  .stats-hero .hero-content { padding-top: 90px; }
+  .stats-section { margin: -20px 20px 40px; }
+  .stats-card { padding: 24px 20px; }
+  .period-controls { flex-wrap: wrap; }
+  .period-control-range { flex-wrap: wrap; }
+  .period-tabs { overflow-x: auto; max-width: 100%; }
+  .period-tab { white-space: nowrap; }
 }
 
 @media (max-width: 560px) {
@@ -1146,4 +1155,282 @@ tr.editing-row td {
   line-height: 1.5;
   color: var(--text-muted);
   text-align: center;
+}
+
+/* ---------- 통계 페이지 ---------- */
+.stats-hero {
+  min-height: 220px;
+  padding-bottom: 70px;
+}
+
+.stats-hero .hero-content {
+  padding-top: 110px;
+  max-width: 640px;
+}
+
+.stats-section {
+  position: relative;
+  margin: -30px 60px 60px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.stats-card {
+  background: var(--white);
+  border-radius: 20px;
+  box-shadow: 0 12px 32px rgba(30, 20, 80, 0.08);
+  padding: 32px 36px;
+}
+
+.stats-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stats-card-header h2 {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* 기간 탭 */
+.period-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg);
+  padding: 4px;
+  border-radius: 14px;
+}
+
+.period-tab {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+
+.period-tab.active {
+  background: var(--white);
+  color: var(--brand);
+  box-shadow: 0 2px 8px rgba(30, 20, 80, 0.08);
+}
+
+.period-controls {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.period-control-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.period-control-field[hidden] { display: none; }
+
+.period-control-field span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.period-control-field input {
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  outline: none;
+}
+
+.period-control-field input:focus { border-color: var(--brand); }
+
+.period-control-range {
+  display: flex;
+  gap: 12px;
+}
+
+.period-control-range[hidden] { display: none; }
+
+/* 기간 요약 */
+.stats-summary-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.stats-summary-chip {
+  flex: 1;
+  min-width: 140px;
+  background: var(--bg);
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stats-summary-chip span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.stats-summary-chip strong {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.stats-summary-chip.income strong { color: var(--income); }
+.stats-summary-chip.expense strong { color: var(--expense); }
+.stats-summary-chip.balance strong { color: var(--balance); }
+
+/* 차트 */
+.chart-legend {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-dot.income { background: var(--income); }
+.legend-dot.expense { background: var(--expense); }
+
+.chart-wrap {
+  position: relative;
+  min-height: 320px;
+}
+
+.chart-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  padding: 60px 0;
+}
+
+/* 목표 달성률 카드 */
+.goal-card-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.goal-edit-btn {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand);
+  background: #EFEBFF;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: opacity .15s ease;
+}
+
+.goal-edit-btn:hover { opacity: .85; }
+
+.goal-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.goal-progress-track {
+  flex: 1;
+  height: 14px;
+  background: var(--bg);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.goal-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--brand), #A79CFF);
+  border-radius: 999px;
+  transition: width .4s ease;
+}
+
+.goal-progress-percent {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--brand);
+  min-width: 48px;
+  text-align: right;
+}
+
+.goal-amounts {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.goal-amount-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.goal-amount-item span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.goal-amount-item strong {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.goal-note {
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* 목표 금액 설정 모달 (기존 modal-overlay/modal-card 재사용) */
+.goal-modal-card .modal-icon {
+  background: #EFEBFF;
+  color: var(--brand);
+}
+
+.goal-modal-card .modal-btn.confirm {
+  background: var(--brand);
+}
+
+.goal-modal-card .modal-btn.confirm:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+.goal-modal-field {
+  text-align: left;
+  margin-bottom: 8px;
 }
