@@ -196,21 +196,21 @@ function initForm() {
     event.preventDefault();
 
     const date = (dateInput && dateInput.value) || new Date().toISOString().slice(0, 10);
-    const memoInput = getField('etc-memo');
-    const etcMemo = memoInput ? memoInput.value.trim() : '';
 
     const newEntries = FIELD_MAP
       .map((field) => {
         const input = getField(field.key);
         const amount = input ? Number(input.value) || 0 : 0;
-        return { field, amount };
+        const memoInput = getField(`${field.key}-memo`);
+        const memo = memoInput ? memoInput.value.trim() : '';
+        return { field, amount, memo };
       })
       .filter((row) => row.amount > 0)
       .map((row) => ({
         date,
         category: row.field.category,
         amount: row.amount,
-        memo: row.field.key === 'etc' ? etcMemo : '',
+        memo: row.memo,
       }));
 
     if (newEntries.length === 0) {
@@ -385,8 +385,12 @@ function updateAutoDebitButtonLabel(key) {
   const btn = document.querySelector(`[data-auto-key="${key}"]`);
   const setting = autoDebitSettings[key];
 
-  if (textEl) textEl.textContent = setting && setting.day ? `매월 ${setting.day}일` : '이체일 설정';
-  if (btn) btn.classList.toggle('is-set', !!(setting && setting.day));
+  const label = setting && setting.day ? `매월 ${setting.day}일` : '이체일 설정';
+  if (textEl) textEl.textContent = label;
+  if (btn) {
+    btn.classList.toggle('is-set', !!(setting && setting.day));
+    btn.title = label;
+  }
 }
 
 function renderAllAutoDebitLabels() {
