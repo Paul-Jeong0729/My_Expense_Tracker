@@ -15,6 +15,10 @@ const FIELD_MAP = [
   { key: 'hana-cheongyak', category: '청약통장 (적금)', section: 'savings' },
   { key: 'hana-sonnimcare', category: '손님캐어 적금', section: 'savings' },
 
+  // 연금·개인IRP
+  { key: 'pension', category: '연금저축 (적금)', section: 'savings' },
+  { key: 'irp', category: '개인형IRP (적금)', section: 'savings' },
+
   // 고정지출 - 헌금
   { key: 'offer-tithe', category: '십일조 (헌금)', section: 'fixed' },
   { key: 'offer-season', category: '절기헌금', section: 'fixed' },
@@ -209,6 +213,7 @@ function initForm() {
       .map((row) => ({
         date,
         category: row.field.category,
+        section: row.field.section,
         amount: row.amount,
         memo: row.memo,
       }));
@@ -536,9 +541,11 @@ async function runAutoDebitCheck() {
     const batch = db.batch();
     dueSettings.forEach((setting) => {
       const entryRef = db.collection(COLLECTION).doc();
+      const field = FIELD_MAP.find((f) => f.key === setting.key);
       batch.set(entryRef, {
         date: today.toISOString().slice(0, 10),
         category: setting.category,
+        section: field ? field.section : null,
         amount: setting.amount,
         memo: '자동이체',
         autoKey: setting.key,
