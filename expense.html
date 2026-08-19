@@ -297,37 +297,42 @@
       <!-- 4. 일반지출 -->
       <div class="form-section">
         <h3 class="form-section-title">일반지출</h3>
-        <div class="form-field-list">
-          <div class="form-field-row">
-            <span class="form-field-row-label">마트</span>
-            <input type="number" inputmode="numeric" min="0" placeholder="0"
-              class="form-field-row-amount" data-key="mart">
-            <input type="text" class="form-field-row-memo" placeholder="메모 (선택)" data-key="mart-memo">
-          </div>
-          <div class="form-field-row">
-            <span class="form-field-row-label">카페</span>
-            <input type="number" inputmode="numeric" min="0" placeholder="0"
-              class="form-field-row-amount" data-key="cafe">
-            <input type="text" class="form-field-row-memo" placeholder="메모 (선택)" data-key="cafe-memo">
-          </div>
-          <div class="form-field-row">
-            <span class="form-field-row-label">온라인</span>
-            <input type="number" inputmode="numeric" min="0" placeholder="0"
-              class="form-field-row-amount" data-key="online">
-            <input type="text" class="form-field-row-memo" placeholder="메모 (선택)" data-key="online-memo">
-          </div>
-          <div class="form-field-row">
-            <span class="form-field-row-label">식당</span>
-            <input type="number" inputmode="numeric" min="0" placeholder="0"
-              class="form-field-row-amount" data-key="restaurant">
-            <input type="text" class="form-field-row-memo" placeholder="메모 (선택)" data-key="restaurant-memo">
-          </div>
-          <div class="form-field-row">
-            <span class="form-field-row-label">기타</span>
-            <input type="number" inputmode="numeric" min="0" placeholder="0"
-              class="form-field-row-amount" data-key="etc">
-            <input type="text" class="form-field-row-memo" placeholder="메모 (선택)" data-key="etc-memo">
-          </div>
+        <div class="form-field-grid">
+          <label class="form-field">
+            <span>마트</span>
+            <div class="form-field-inline">
+              <input type="number" inputmode="numeric" min="0" placeholder="0" data-key="mart">
+              <input type="text" class="form-field-row-memo" placeholder="메모 (선택)" data-key="mart-memo">
+            </div>
+          </label>
+          <label class="form-field">
+            <span>카페</span>
+            <div class="form-field-inline">
+              <input type="number" inputmode="numeric" min="0" placeholder="0" data-key="cafe">
+              <input type="text" class="form-field-row-memo" placeholder="메모 (선택)" data-key="cafe-memo">
+            </div>
+          </label>
+          <label class="form-field">
+            <span>온라인</span>
+            <div class="form-field-inline">
+              <input type="number" inputmode="numeric" min="0" placeholder="0" data-key="online">
+              <input type="text" class="form-field-row-memo" placeholder="메모 (선택)" data-key="online-memo">
+            </div>
+          </label>
+          <label class="form-field">
+            <span>식당</span>
+            <div class="form-field-inline">
+              <input type="number" inputmode="numeric" min="0" placeholder="0" data-key="restaurant">
+              <input type="text" class="form-field-row-memo" placeholder="메모 (선택)" data-key="restaurant-memo">
+            </div>
+          </label>
+          <label class="form-field">
+            <span>기타</span>
+            <div class="form-field-inline">
+              <input type="number" inputmode="numeric" min="0" placeholder="0" data-key="etc">
+              <input type="text" class="form-field-row-memo" placeholder="메모 (선택)" data-key="etc-memo">
+            </div>
+          </label>
         </div>
         <div class="section-subtotal">소계 <strong data-subtotal-for="general">0원</strong></div>
       </div>
