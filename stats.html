@@ -35,6 +35,7 @@
 
         <div class="nav-right">
           <nav class="nav-menu">
+            <a href="savings.html" target="_blank" class="nav-link">적금</a>
             <a href="stats.html" target="_blank" class="nav-link active">통계</a>
             <a href="settings.html" target="_blank" class="nav-link">설정</a>
           </nav>
@@ -67,7 +68,7 @@
     <!-- 항목별 수입·지출 비교 -->
     <div class="stats-card">
       <div class="stats-card-header">
-        <h2>📊 항목별 수입·지출 비교</h2>
+        <h2>💙 수입 항목별</h2>
         <div class="period-tabs" id="period-tabs">
           <button type="button" class="period-tab active" data-mode="current">이번 달</button>
           <button type="button" class="period-tab" data-mode="month">월 선택</button>
@@ -97,25 +98,61 @@
           <span>총 수입</span>
           <strong id="stats-total-income">0원</strong>
         </div>
+      </div>
+
+      <div class="chart-wrap" id="income-chart-wrap">
+        <canvas id="income-chart"></canvas>
+      </div>
+      <p class="chart-empty" id="income-chart-empty" hidden>선택한 기간에 등록된 수입 내역이 없어요.</p>
+    </div>
+
+    <!-- 지출 항목별 -->
+    <div class="stats-card">
+      <div class="stats-card-header">
+        <h2>❤️ 지출 항목별</h2>
+      </div>
+
+      <div class="stats-summary-row">
         <div class="stats-summary-chip expense">
           <span>총 지출</span>
           <strong id="stats-total-expense">0원</strong>
         </div>
         <div class="stats-summary-chip balance">
-          <span>차액</span>
+          <span>차액 (수입-지출)</span>
           <strong id="stats-total-balance">0원</strong>
         </div>
       </div>
 
-      <div class="chart-legend">
-        <span class="legend-item"><i class="legend-dot income"></i>수입</span>
-        <span class="legend-item"><i class="legend-dot expense"></i>지출</span>
+      <div class="chart-wrap" id="expense-chart-wrap">
+        <canvas id="expense-chart"></canvas>
       </div>
+      <p class="chart-empty" id="expense-chart-empty" hidden>선택한 기간에 등록된 지출 내역이 없어요.</p>
+    </div>
 
-      <div class="chart-wrap">
-        <canvas id="category-chart"></canvas>
+    <!-- 월별 카드사용 금액 -->
+    <div class="stats-card">
+      <div class="stats-card-header">
+        <h2>💳 월별 카드사용 금액</h2>
+        <label class="period-control-field year-picker-field">
+          <span>연도</span>
+          <input type="number" id="year-picker" min="2000" max="2100" step="1">
+        </label>
       </div>
-      <p class="chart-empty" id="chart-empty" hidden>선택한 기간에 등록된 내역이 없어요.</p>
+      <p class="stats-card-desc">한 해 동안(1월~12월) 기록된 지출 총액을 달별로 보여줘요.</p>
+      <div class="chart-wrap chart-wrap-year">
+        <canvas id="card-usage-chart"></canvas>
+      </div>
+    </div>
+
+    <!-- 통장잔액 추이 -->
+    <div class="stats-card">
+      <div class="stats-card-header">
+        <h2>🏦 통장잔액 추이</h2>
+      </div>
+      <p class="stats-card-desc">위에서 선택한 연도 기준, 1월부터 매달 (수입-지출)을 누적으로 더한 흐름이에요. 실제 통장 시작 잔액은 반영돼 있지 않아요.</p>
+      <div class="chart-wrap chart-wrap-year">
+        <canvas id="balance-chart"></canvas>
+      </div>
     </div>
 
     <!-- 저축 목표 달성률 -->
@@ -124,7 +161,7 @@
         <h2>🎯 저축 목표 달성률</h2>
         <button type="button" class="goal-edit-btn" id="goal-edit-btn">목표 금액 설정</button>
       </div>
-      <p class="goal-card-desc">적금·연금저축·개인형IRP로 지금까지 모은 금액을 목표 금액과 비교해요.</p>
+      <p class="goal-card-desc">적금·정기예탁·연금(IRP 포함)으로 지금까지 모은 금액을 목표 금액과 비교해요.</p>
 
       <div class="goal-progress">
         <div class="goal-progress-track">
@@ -144,7 +181,7 @@
         </div>
       </div>
 
-      <p class="goal-note">※ 지출 내역 중 적금·연금저축·개인형IRP 항목으로 기록된 모든 내역을 지금까지 누적으로 더한 금액이에요 (기간 선택과 무관하게 항상 전체 기간 기준).</p>
+      <p class="goal-note">※ 적금·정기예탁·연금(IRP 포함)으로 기록된 모든 지출 내역을 지금까지 누적으로 더한 금액이에요 (전체 기간 기준). <a href="savings.html" target="_blank">적금 페이지</a>에서 항목별로 자세히 볼 수 있어요.</p>
     </div>
 
   </section>

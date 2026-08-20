@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My 가계부 - 적금</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<main>
+  <section class="hero savings-hero">
+    <div class="hero-bg"></div>
+
+    <header class="nav">
+      <div class="nav-inner">
+        <div class="nav-left">
+          <div class="logo">
+            <span class="logo-icon">📘</span>
+            <span class="logo-text">My 가계부</span>
+          </div>
+
+          <nav class="nav-menu">
+            <a href="index.html" target="_blank" class="nav-link">홈</a>
+            <a href="income.html" target="_blank" class="nav-link">수입</a>
+            <a href="expense.html" target="_blank" class="nav-link">지출</a>
+          </nav>
+        </div>
+
+        <div class="nav-right">
+          <nav class="nav-menu">
+            <a href="savings.html" target="_blank" class="nav-link active">적금</a>
+            <a href="stats.html" target="_blank" class="nav-link">통계</a>
+            <a href="settings.html" target="_blank" class="nav-link">설정</a>
+          </nav>
+
+          <div class="user-menu" id="user-menu">
+            <span class="user-icon">👤</span>
+            <span class="user-greeting">사랑해요 양균님</span>
+            <span class="dropdown-arrow">⌄</span>
+
+            <div class="user-dropdown" id="user-dropdown">
+              <button type="button" class="user-dropdown-item logout" id="logout-btn">
+                <span class="user-dropdown-icon">🚪</span>
+                <span>로그아웃</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="hero-content">
+      <p class="hero-line1">차곡차곡 모이고 있어요</p>
+      <h1 class="hero-line2">적금</h1>
+      <p class="hero-line3">적금·정기예탁·연금을 한눈에 모아 목표 달성률까지 확인해보세요.</p>
+    </div>
+  </section>
+
+  <section class="savings-section">
+
+    <!-- 목표 금액 타이틀 -->
+    <div class="goal-title-card">
+      <div class="goal-title-text">
+        <span class="goal-title-label">나의 목표 금액</span>
+        <span class="goal-title-amount" id="goal-title-amount">설정 전</span>
+        <span class="goal-title-sub" id="goal-title-sub">목표를 설정하고 달성률을 확인해보세요</span>
+      </div>
+      <button type="button" class="goal-title-edit-btn" id="goal-edit-btn">목표 금액 설정</button>
+    </div>
+
+    <!-- 적금 + 정기예탁 -->
+    <div class="stats-card tree-card">
+      <h2 class="tree-card-title">💰 적금 · 정기예탁</h2>
+
+      <div class="tree-group">
+        <span class="tree-group-title">적금</span>
+
+        <div class="tree-bank">
+          <div class="tree-bank-name">농협</div>
+          <div class="tree-item">
+            <span class="tree-item-name">농협생명보험</span>
+            <div class="tree-item-values">
+              <span class="tree-item-monthly" data-monthly="nh-life">월 -</span>
+              <span class="tree-item-cumulative" data-cumulative="nh-life">0원 누적</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="tree-bank">
+          <div class="tree-bank-name">하나</div>
+          <div class="tree-item">
+            <span class="tree-item-name">청약통장</span>
+            <div class="tree-item-values">
+              <span class="tree-item-monthly" data-monthly="hana-cheongyak">월 -</span>
+              <span class="tree-item-cumulative" data-cumulative="hana-cheongyak">0원 누적</span>
+            </div>
+          </div>
+          <div class="tree-item">
+            <span class="tree-item-name">손님캐어적금</span>
+            <div class="tree-item-values">
+              <span class="tree-item-monthly" data-monthly="hana-sonnimcare">월 -</span>
+              <span class="tree-item-cumulative" data-cumulative="hana-sonnimcare">0원 누적</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tree-group">
+        <span class="tree-group-title">정기예탁</span>
+
+        <div class="tree-bank">
+          <div class="tree-bank-name">농협</div>
+          <div class="tree-item">
+            <span class="tree-item-name">1년</span>
+            <div class="tree-item-values">
+              <span class="tree-item-cumulative" data-cumulative="deposit-nh-1y">0원 누적</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tree-total-row">
+        <span class="tree-total-label">적금·정기예탁 합계</span>
+        <span class="tree-total-amount" id="savings-deposit-total">0원</span>
+      </div>
+    </div>
+
+    <!-- 연금 -->
+    <div class="stats-card tree-card">
+      <h2 class="tree-card-title">🧓 연금</h2>
+
+      <div class="tree-group">
+        <span class="tree-group-title">퇴직연금</span>
+
+        <div class="tree-bank">
+          <div class="tree-bank-name">국민은행</div>
+          <div class="tree-item">
+            <span class="tree-item-name">송촌자립</span>
+            <div class="tree-item-values">
+              <span class="tree-item-monthly" data-monthly="pension-kb-songchon">월 -</span>
+              <span class="tree-item-cumulative" data-cumulative="pension-kb-songchon">0원 누적</span>
+            </div>
+          </div>
+          <div class="tree-item tree-item-irp">
+            <span class="tree-item-name">IRP</span>
+            <div class="tree-item-values">
+              <span class="tree-item-cumulative" data-cumulative="pension-kb-irp">0원 누적</span>
+              <div class="tree-add-row">
+                <input type="number" inputmode="numeric" min="0" placeholder="추가 입금액" class="tree-add-input" data-add-key="pension-kb-irp">
+                <button type="button" class="tree-add-btn" data-add-key="pension-kb-irp">입금</button>
+              </div>
+              <span class="tree-add-message" data-add-message="pension-kb-irp"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="tree-bank">
+          <div class="tree-bank-name">하나은행</div>
+          <div class="tree-item">
+            <span class="tree-item-name">돌봄센터</span>
+            <div class="tree-item-values">
+              <span class="tree-item-monthly" data-monthly="pension-hana-dolbom">월 -</span>
+              <span class="tree-item-cumulative" data-cumulative="pension-hana-dolbom">0원 누적</span>
+            </div>
+          </div>
+          <div class="tree-item tree-item-irp">
+            <span class="tree-item-name">IRP</span>
+            <div class="tree-item-values">
+              <span class="tree-item-cumulative" data-cumulative="pension-hana-irp">0원 누적</span>
+              <div class="tree-add-row">
+                <input type="number" inputmode="numeric" min="0" placeholder="추가 입금액" class="tree-add-input" data-add-key="pension-hana-irp">
+                <button type="button" class="tree-add-btn" data-add-key="pension-hana-irp">입금</button>
+              </div>
+              <span class="tree-add-message" data-add-message="pension-hana-irp"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tree-total-row">
+        <span class="tree-total-label">연금 합계</span>
+        <span class="tree-total-amount" id="pension-total">0원</span>
+      </div>
+    </div>
+
+    <!-- 전체 달성률 -->
+    <div class="stats-card overall-goal-card">
+      <div class="overall-goal-percent" id="overall-goal-percent">0%</div>
+      <p class="overall-goal-caption">적금·정기예탁·연금을 합쳐 목표를 이만큼 달성했어요</p>
+      <div class="overall-goal-track">
+        <div class="overall-goal-fill" id="overall-goal-fill"></div>
+      </div>
+      <div class="overall-goal-amounts">
+        <div class="goal-amount-item">
+          <span>지금까지 모은 금액</span>
+          <strong id="overall-current-amount">0원</strong>
+        </div>
+        <div class="goal-amount-item">
+          <span>목표 금액</span>
+          <strong id="overall-target-amount">아직 설정 안 함</strong>
+        </div>
+      </div>
+      <p class="goal-note">※ <a href="stats.html" target="_blank">통계 페이지</a>의 저축 목표 달성률과 같은 값이에요 (동일한 목표 금액을 함께 사용해요).</p>
+    </div>
+
+  </section>
+</main>
+
+<div class="modal-overlay" id="goal-modal">
+  <div class="modal-card goal-modal-card">
+    <div class="modal-icon">🎯</div>
+    <h3 class="modal-title">목표 금액 설정</h3>
+    <p class="modal-message">적금·정기예탁·연금(IRP 포함)을 합쳐 얼마를 모으고 싶으신가요?</p>
+
+    <label class="settings-field goal-modal-field">
+      <span>목표 금액 (원)</span>
+      <input type="number" inputmode="numeric" min="0" placeholder="예: 200000000" id="goal-target-input">
+    </label>
+
+    <p class="settings-message" id="goal-modal-message"></p>
+
+    <div class="modal-actions">
+      <button type="button" class="modal-btn cancel" id="goal-modal-cancel">취소</button>
+      <button type="button" class="modal-btn confirm" id="goal-modal-save">저장할게요</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth-guard.js"></script>
+<script src="js/savings.js"></script>
+</body>
+</html>
