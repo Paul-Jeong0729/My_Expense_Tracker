@@ -555,22 +555,43 @@ td.expense { color: var(--expense); font-weight: 600; }
   margin-left: 6px;
 }
 
-/* 일반지출: 원래 그리드 형태 유지, 금액 입력칸 오른쪽에 메모칸 배치 */
-.form-field-inline {
+/* 일반지출: 항목을 세로로 한 줄씩 나열, 금액(1/3) + 메모 + 지출 날짜 아이콘 */
+.form-field-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-field-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex: 1 1 100%;
-  width: 100%;
+  gap: 10px;
 }
 
-.form-field .form-field-inline input[type="text"] {
-  width: auto;
-  flex: 1 1 auto;
-  min-width: 0;
+.form-field-row-label {
+  flex: 0 0 56px;
+  font-size: 13px;
+  color: var(--text-muted);
 }
+
+.form-field-row-amount {
+  flex: 0 1 33%;
+  min-width: 64px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-main);
+  outline: none;
+  transition: border-color .15s ease;
+}
+
+.form-field-row-amount:focus { border-color: var(--brand); }
 
 .form-field-row-memo {
+  flex: 1 1 auto;
+  min-width: 0;
   font-family: var(--font-body);
   font-size: 15px;
   padding: 10px 12px;
@@ -593,8 +614,9 @@ td.expense { color: var(--expense); font-weight: 600; }
   line-height: 1.5;
 }
 
-/* 자동이체일 트리거 버튼 - 달력 아이콘만 표시되는 원형 버튼 */
-.auto-debit-trigger {
+/* 자동이체일 트리거 버튼 / 지출 날짜 트리거 버튼 - 아이콘만 표시되는 원형 버튼 */
+.auto-debit-trigger,
+.date-trigger {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -617,13 +639,25 @@ td.expense { color: var(--expense); font-weight: 600; }
   color: var(--expense);
 }
 
+.date-trigger:hover {
+  border-color: var(--income);
+  color: var(--income);
+}
+
 .auto-debit-trigger.is-set {
   background: #FFF0F0;
   border-color: var(--expense);
   color: var(--expense);
 }
 
-.auto-debit-icon { font-size: 14px; }
+.date-trigger.is-set {
+  background: #EAF1FF;
+  border-color: var(--income);
+  color: var(--income);
+}
+
+.auto-debit-icon,
+.date-trigger-icon { font-size: 14px; }
 
 /* 텍스트 라벨은 버튼 title(툴팁)로 대체되므로 화면에는 숨김 */
 .auto-debit-text {
@@ -633,6 +667,18 @@ td.expense { color: var(--expense); font-weight: 600; }
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
+}
+
+/* 지출 날짜용 네이티브 date input은 화면엔 숨기고 버튼으로만 조작 */
+.item-date-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* 자동이체일 선택 팝오버 (달력형 그리드) */
@@ -778,7 +824,12 @@ td.expense { color: var(--expense); font-weight: 600; }
 
 @media (max-width: 560px) {
   .form-field-grid { grid-template-columns: 1fr; }
-  .form-field-inline { flex-wrap: wrap; }
+  .form-field-row { flex-wrap: wrap; }
+  .form-field-row-label { flex: 0 0 100%; }
+  .nav-right { gap: 14px; }
+  .nav-right .nav-menu { gap: 12px; }
+  .nav-link { font-size: 13px; }
+  .user-greeting { display: none; }
 }
 
 /* ---------- Table selection / inline edit ---------- */
@@ -1198,6 +1249,30 @@ tr.editing-row td {
   font-weight: 700;
 }
 
+.stats-card-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.year-picker-field {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.year-picker-field span { font-size: 13px; }
+
+.year-picker-field input {
+  width: 90px;
+  padding: 7px 10px;
+}
+
+.chart-wrap-year {
+  min-height: 300px;
+}
+
 /* 기간 탭 */
 .period-tabs {
   display: flex;
@@ -1433,4 +1508,279 @@ tr.editing-row td {
 .goal-modal-field {
   text-align: left;
   margin-bottom: 8px;
+}
+
+/* ---------- 적금(저축 자산) 페이지 ---------- */
+.savings-hero {
+  min-height: 220px;
+  padding-bottom: 70px;
+}
+
+.savings-hero .hero-content {
+  padding-top: 110px;
+  max-width: 640px;
+}
+
+.savings-section {
+  position: relative;
+  margin: -30px 60px 60px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 목표 금액 타이틀 카드 */
+.goal-title-card {
+  background: linear-gradient(135deg, var(--brand) 0%, #A79CFF 100%);
+  border-radius: 24px;
+  padding: 36px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  box-shadow: 0 16px 36px rgba(124, 111, 240, 0.28);
+  color: var(--white);
+}
+
+.goal-title-text { display: flex; flex-direction: column; gap: 6px; }
+
+.goal-title-label {
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0.85;
+  letter-spacing: 0.02em;
+}
+
+.goal-title-amount {
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.goal-title-sub {
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.goal-title-edit-btn {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand);
+  background: var(--white);
+  border: none;
+  padding: 11px 20px;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: opacity .15s ease;
+  flex-shrink: 0;
+}
+
+.goal-title-edit-btn:hover { opacity: .9; }
+
+/* 트리 카드 */
+.tree-card { }
+
+.tree-card-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.tree-group { margin-bottom: 22px; }
+
+.tree-group:last-of-type { margin-bottom: 0; }
+
+.tree-group-title {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand);
+  background: #F1EEFF;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+}
+
+.tree-bank { margin-bottom: 14px; padding-left: 4px; }
+
+.tree-bank:last-child { margin-bottom: 0; }
+
+.tree-bank-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  padding-left: 10px;
+  border-left: 3px solid var(--border);
+}
+
+.tree-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px 12px 22px;
+  border-radius: 12px;
+  transition: background .15s ease;
+}
+
+.tree-item:hover { background: var(--bg); }
+
+.tree-item-name {
+  flex: 0 0 auto;
+  min-width: 96px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.tree-item-values {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 18px;
+  text-align: right;
+}
+
+.tree-item-monthly {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.tree-item-cumulative {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--brand);
+  min-width: 120px;
+}
+
+.tree-item-irp .tree-item-values { flex-wrap: wrap; }
+
+.tree-add-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tree-add-input {
+  width: 110px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+  text-align: right;
+}
+
+.tree-add-input:focus { border-color: var(--brand); }
+
+.tree-add-btn {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--white);
+  background: var(--brand);
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity .15s ease;
+}
+
+.tree-add-btn:hover { opacity: .88; }
+.tree-add-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+.tree-add-message {
+  flex: 0 0 100%;
+  font-size: 12px;
+  color: var(--balance);
+  text-align: right;
+  min-height: 16px;
+}
+
+.tree-add-message.error { color: var(--expense); }
+
+.tree-total-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--border);
+}
+
+.tree-total-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.tree-total-amount {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--brand);
+}
+
+/* 전체 달성률 카드 (하단, 크고 눈에 띄게) */
+.overall-goal-card {
+  text-align: center;
+  padding: 40px 36px;
+}
+
+.overall-goal-percent {
+  font-family: var(--font-display);
+  font-size: 56px;
+  font-weight: 700;
+  color: var(--brand);
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+
+.overall-goal-caption {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.overall-goal-track {
+  height: 18px;
+  background: var(--bg);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.overall-goal-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--brand), #A79CFF);
+  border-radius: 999px;
+  transition: width .5s ease;
+}
+
+.overall-goal-amounts {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .savings-hero { padding-bottom: 60px; }
+  .savings-hero .hero-content { padding-top: 90px; }
+  .savings-section { margin: -20px 20px 40px; }
+  .tree-card { padding: 24px 20px; }
+  .goal-title-card { padding: 28px 24px; }
+  .goal-title-amount { font-size: 32px; }
+  .tree-item { flex-wrap: wrap; }
+  .tree-item-values { justify-content: flex-start; text-align: left; width: 100%; }
+  .overall-goal-percent { font-size: 44px; }
+  .overall-goal-amounts { gap: 20px; }
 }
