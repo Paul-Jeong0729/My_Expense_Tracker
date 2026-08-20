@@ -1,14 +1,19 @@
 // stats.js — 통계 페이지 전용 스크립트
-// income_entries / expense_entries를 실시간 구독해서 항목별 막대그래프를 그리고,
-// 적금·연금저축·개인형IRP 누적 합계로 저축 목표 달성률을 계산합니다.
+// income_entries / expense_entries를 실시간 구독해서
+// 1) 수입 항목별 막대그래프  2) 지출 항목별 막대그래프
+// 3) 월별 카드사용(지출) 금액 막대그래프 (1년, 1~12월)  4) 통장잔액 추이 선그래프
+// 를 순서대로 그리고, 적금·연금저축·개인형IRP 누적 합계로 저축 목표 달성률을 계산합니다.
 
 const INCOME_COLLECTION = 'income_entries';
 const EXPENSE_COLLECTION = 'expense_entries';
 const GOAL_DOC_REF_PATH = ['app_settings', 'savings_goal'];
 
-// 지출 항목 중 "적금·연금·개인IRP"로 취급할 카테고리 판별용 (section 태그가 없는
-// 예전 내역도 놓치지 않도록 카테고리 이름으로도 한 번 더 확인해요)
-const SAVINGS_KEYWORD = /적금|연금|irp/i;
+// 지출 항목 중 "적금·정기예탁·연금(IRP 포함)"으로 취급할 카테고리 판별용 (section 태그가
+// 없는 예전 내역도 놓치지 않도록 카테고리 이름으로도 한 번 더 확인해요)
+const GOAL_SECTIONS = ['savings', 'deposit', 'pension'];
+const SAVINGS_KEYWORD = /적금|연금|정기예탁|irp/i;
+
+const MONTH_LABELS = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
 
 function formatWon(amount) {
   return `${Number(amount || 0).toLocaleString('ko-KR')}원`;
@@ -16,14 +21,13 @@ function formatWon(amount) {
 
 function pad2(n) { return String(n).padStart(2, '0'); }
 
-function todayISO() {
-  const d = new Date();
-  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-}
-
 function currentMonthValue() {
   const d = new Date();
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`;
+}
+
+function currentYear() {
+  return new Date().getFullYear();
 }
 
 function firstDayOfMonth(monthValue) {
@@ -36,20 +40,30 @@ function lastDayOfMonth(monthValue) {
   return `${monthValue}-${pad2(last)}`;
 }
 
-function isSavingsEntry(entry) {
-  if (entry.section) return entry.section === 'savings';
+function isGoalEntry(entry) {
+  if (entry.section) return GOAL_SECTIONS.includes(entry.section);
   return SAVINGS_KEYWORD.test(entry.category || '');
+}
+
+function cssColor(name, fallback) {
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return v || fallback;
 }
 
 // ---- 상태 ----
 let latestIncome = [];
 let latestExpense = [];
 let goalTargetAmount = 0;
-let chartInstance = null;
 
-let periodMode = 'current'; // 'current' | 'month' | 'range'
+let incomeChart = null;
+let expenseChart = null;
+let cardUsageChart = null;
+let balanceChart = null;
 
-// ---- 기간 필터 ----
+let periodMode = 'current'; // 'current' | 'month' | 'range' (수입/지출 항목별 차트용)
+let selectedYear = currentYear(); // 월별 카드사용 금액 / 통장잔액 추이용
+
+// ---- 기간 필터 (수입/지출 항목별) ----
 function getPeriodRange() {
   if (periodMode === 'current') {
     const m = currentMonthValue();
@@ -60,7 +74,6 @@ function getPeriodRange() {
     const m = (picker && picker.value) || currentMonthValue();
     return { start: firstDayOfMonth(m), end: lastDayOfMonth(m) };
   }
-  // range
   const startInput = document.getElementById('range-start');
   const endInput = document.getElementById('range-end');
   const start = (startInput && startInput.value) || firstDayOfMonth(currentMonthValue());
@@ -72,7 +85,6 @@ function filterByRange(entries, range) {
   return entries.filter((e) => typeof e.date === 'string' && e.date >= range.start && e.date <= range.end);
 }
 
-// ---- 항목별 집계 + 차트 ----
 function aggregateByCategory(entries) {
   const map = new Map();
   entries.forEach((e) => {
@@ -83,69 +95,43 @@ function aggregateByCategory(entries) {
   return map;
 }
 
-function renderChart() {
-  const range = getPeriodRange();
-  const incomeInRange = filterByRange(latestIncome, range);
-  const expenseInRange = filterByRange(latestExpense, range);
-
-  const totalIncome = incomeInRange.reduce((s, e) => s + (Number(e.amount) || 0), 0);
-  const totalExpense = expenseInRange.reduce((s, e) => s + (Number(e.amount) || 0), 0);
-
-  const incomeEl = document.getElementById('stats-total-income');
-  const expenseEl = document.getElementById('stats-total-expense');
-  const balanceEl = document.getElementById('stats-total-balance');
-  if (incomeEl) incomeEl.textContent = formatWon(totalIncome);
-  if (expenseEl) expenseEl.textContent = formatWon(totalExpense);
-  if (balanceEl) balanceEl.textContent = formatWon(totalIncome - totalExpense);
-
-  const incomeByCategory = aggregateByCategory(incomeInRange);
-  const expenseByCategory = aggregateByCategory(expenseInRange);
-
-  const rows = [
-    ...Array.from(incomeByCategory, ([category, amount]) => ({ category, amount, type: 'income' })),
-    ...Array.from(expenseByCategory, ([category, amount]) => ({ category, amount, type: 'expense' })),
-  ].sort((a, b) => b.amount - a.amount);
-
-  const canvas = document.getElementById('category-chart');
-  const emptyEl = document.getElementById('chart-empty');
-  const wrap = canvas ? canvas.closest('.chart-wrap') : null;
+function renderBarChart({ chartInstanceKey, canvasId, wrapId, emptyId, rows, color }) {
+  const canvas = document.getElementById(canvasId);
+  const emptyEl = document.getElementById(emptyId);
+  const wrap = document.getElementById(wrapId);
+  const existing = { income: incomeChart, expense: expenseChart }[chartInstanceKey];
 
   if (rows.length === 0) {
     if (canvas) canvas.style.display = 'none';
     if (emptyEl) emptyEl.hidden = false;
-    if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+    if (existing) { existing.destroy(); if (chartInstanceKey === 'income') incomeChart = null; else expenseChart = null; }
     return;
   }
 
   if (canvas) canvas.style.display = 'block';
   if (emptyEl) emptyEl.hidden = true;
 
-  const incomeColor = getComputedStyle(document.documentElement).getPropertyValue('--income').trim() || '#4C7EF3';
-  const expenseColor = getComputedStyle(document.documentElement).getPropertyValue('--expense').trim() || '#F45B5B';
-
   const labels = rows.map((r) => r.category);
   const data = rows.map((r) => r.amount);
-  const colors = rows.map((r) => (r.type === 'income' ? incomeColor : expenseColor));
 
-  if (wrap) wrap.style.height = `${Math.max(320, rows.length * 40 + 40)}px`;
+  if (wrap) wrap.style.height = `${Math.max(240, rows.length * 40 + 40)}px`;
 
-  if (chartInstance) {
-    chartInstance.data.labels = labels;
-    chartInstance.data.datasets[0].data = data;
-    chartInstance.data.datasets[0].backgroundColor = colors;
-    chartInstance.update();
+  if (existing) {
+    existing.data.labels = labels;
+    existing.data.datasets[0].data = data;
+    existing.update();
     return;
   }
 
   if (typeof Chart === 'undefined' || !canvas) return;
 
-  chartInstance = new Chart(canvas, {
+  const chart = new Chart(canvas, {
     type: 'bar',
     data: {
       labels,
       datasets: [{
         data,
-        backgroundColor: colors,
+        backgroundColor: color,
         borderRadius: 8,
         barThickness: 20,
       }],
@@ -156,11 +142,7 @@ function renderChart() {
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: (ctx) => formatWon(ctx.parsed.x),
-          },
-        },
+        tooltip: { callbacks: { label: (ctx) => formatWon(ctx.parsed.x) } },
       },
       scales: {
         x: {
@@ -178,9 +160,177 @@ function renderChart() {
       },
     },
   });
+
+  if (chartInstanceKey === 'income') incomeChart = chart; else expenseChart = chart;
 }
 
-// ---- 기간 탭 UI ----
+function renderIncomeExpenseCharts() {
+  const range = getPeriodRange();
+  const incomeInRange = filterByRange(latestIncome, range);
+  const expenseInRange = filterByRange(latestExpense, range);
+
+  const totalIncome = incomeInRange.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+  const totalExpense = expenseInRange.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+
+  const incomeEl = document.getElementById('stats-total-income');
+  const expenseEl = document.getElementById('stats-total-expense');
+  const balanceEl = document.getElementById('stats-total-balance');
+  if (incomeEl) incomeEl.textContent = formatWon(totalIncome);
+  if (expenseEl) expenseEl.textContent = formatWon(totalExpense);
+  if (balanceEl) balanceEl.textContent = formatWon(totalIncome - totalExpense);
+
+  const incomeRows = Array.from(aggregateByCategory(incomeInRange), ([category, amount]) => ({ category, amount }))
+    .sort((a, b) => b.amount - a.amount);
+  const expenseRows = Array.from(aggregateByCategory(expenseInRange), ([category, amount]) => ({ category, amount }))
+    .sort((a, b) => b.amount - a.amount);
+
+  renderBarChart({
+    chartInstanceKey: 'income',
+    canvasId: 'income-chart',
+    wrapId: 'income-chart-wrap',
+    emptyId: 'income-chart-empty',
+    rows: incomeRows,
+    color: cssColor('--income', '#4C7EF3'),
+  });
+
+  renderBarChart({
+    chartInstanceKey: 'expense',
+    canvasId: 'expense-chart',
+    wrapId: 'expense-chart-wrap',
+    emptyId: 'expense-chart-empty',
+    rows: expenseRows,
+    color: cssColor('--expense', '#F45B5B'),
+  });
+}
+
+// ---- 월별 카드사용 금액 (1~12월) ----
+function monthlyTotals(entries, year) {
+  const totals = new Array(12).fill(0);
+  entries.forEach((e) => {
+    if (typeof e.date !== 'string') return;
+    const [y, m] = e.date.split('-');
+    if (Number(y) !== year) return;
+    const idx = Number(m) - 1;
+    if (idx >= 0 && idx < 12) totals[idx] += Number(e.amount) || 0;
+  });
+  return totals;
+}
+
+function renderCardUsageChart() {
+  const canvas = document.getElementById('card-usage-chart');
+  if (!canvas || typeof Chart === 'undefined') return;
+
+  const monthlyExpense = monthlyTotals(latestExpense, selectedYear);
+  const color = cssColor('--brand', '#7C6FF0');
+
+  if (cardUsageChart) {
+    cardUsageChart.data.datasets[0].data = monthlyExpense;
+    cardUsageChart.update();
+    return;
+  }
+
+  cardUsageChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: MONTH_LABELS,
+      datasets: [{
+        data: monthlyExpense,
+        backgroundColor: color,
+        borderRadius: 8,
+        maxBarThickness: 36,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: (ctx) => formatWon(ctx.parsed.y) } },
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: '#ECECF1' },
+          ticks: {
+            callback: (value) => Number(value).toLocaleString('ko-KR'),
+            font: { family: 'Pretendard' },
+          },
+        },
+        x: {
+          grid: { display: false },
+          ticks: { font: { family: 'Pretendard', size: 12 } },
+        },
+      },
+    },
+  });
+}
+
+// ---- 통장잔액 추이 (선그래프, 1~12월 누적) ----
+function renderBalanceChart() {
+  const canvas = document.getElementById('balance-chart');
+  if (!canvas || typeof Chart === 'undefined') return;
+
+  const monthlyIncome = monthlyTotals(latestIncome, selectedYear);
+  const monthlyExpense = monthlyTotals(latestExpense, selectedYear);
+
+  let running = 0;
+  const cumulative = monthlyIncome.map((incomeAmt, idx) => {
+    running += incomeAmt - monthlyExpense[idx];
+    return running;
+  });
+
+  const color = cssColor('--balance', '#3FB88E');
+
+  if (balanceChart) {
+    balanceChart.data.datasets[0].data = cumulative;
+    balanceChart.update();
+    return;
+  }
+
+  balanceChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: MONTH_LABELS,
+      datasets: [{
+        data: cumulative,
+        borderColor: color,
+        backgroundColor: `${color}26`,
+        pointBackgroundColor: color,
+        pointRadius: 4,
+        tension: 0.3,
+        fill: true,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: (ctx) => formatWon(ctx.parsed.y) } },
+      },
+      scales: {
+        y: {
+          grid: { color: '#ECECF1' },
+          ticks: {
+            callback: (value) => Number(value).toLocaleString('ko-KR'),
+            font: { family: 'Pretendard' },
+          },
+        },
+        x: {
+          grid: { display: false },
+          ticks: { font: { family: 'Pretendard', size: 12 } },
+        },
+      },
+    },
+  });
+}
+
+function renderYearCharts() {
+  renderCardUsageChart();
+  renderBalanceChart();
+}
+
+// ---- 기간 탭 UI (수입/지출 항목별) ----
 function initPeriodControls() {
   const tabs = document.querySelectorAll('.period-tab');
   const monthField = document.getElementById('month-pick-field');
@@ -203,18 +353,30 @@ function initPeriodControls() {
       if (monthField) monthField.hidden = periodMode !== 'month';
       if (rangeFields) rangeFields.hidden = periodMode !== 'range';
 
-      renderChart();
+      renderIncomeExpenseCharts();
     });
   });
 
-  if (monthPicker) monthPicker.addEventListener('change', renderChart);
-  if (rangeStart) rangeStart.addEventListener('change', renderChart);
-  if (rangeEnd) rangeEnd.addEventListener('change', renderChart);
+  if (monthPicker) monthPicker.addEventListener('change', renderIncomeExpenseCharts);
+  if (rangeStart) rangeStart.addEventListener('change', renderIncomeExpenseCharts);
+  if (rangeEnd) rangeEnd.addEventListener('change', renderIncomeExpenseCharts);
+}
+
+// ---- 연도 선택 UI (월별 카드사용 금액 / 통장잔액 추이) ----
+function initYearControl() {
+  const yearInput = document.getElementById('year-picker');
+  if (!yearInput) return;
+  yearInput.value = selectedYear;
+  yearInput.addEventListener('change', () => {
+    const v = Number(yearInput.value);
+    selectedYear = v && v > 1900 ? v : currentYear();
+    renderYearCharts();
+  });
 }
 
 // ---- 저축 목표 달성률 ----
 function renderGoal() {
-  const allSavingsEntries = latestExpense.filter(isSavingsEntry);
+  const allSavingsEntries = latestExpense.filter(isGoalEntry);
   const currentAmount = allSavingsEntries.reduce((s, e) => s + (Number(e.amount) || 0), 0);
 
   const currentEl = document.getElementById('goal-current-amount');
@@ -309,6 +471,7 @@ function initGoalModal() {
 
 document.addEventListener('DOMContentLoaded', () => {
   initPeriodControls();
+  initYearControl();
   initGoalModal();
 
   window.authReady.then((user) => {
@@ -316,12 +479,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     db.collection(INCOME_COLLECTION).onSnapshot((snapshot) => {
       latestIncome = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      renderChart();
+      renderIncomeExpenseCharts();
+      renderYearCharts();
     });
 
     db.collection(EXPENSE_COLLECTION).onSnapshot((snapshot) => {
       latestExpense = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      renderChart();
+      renderIncomeExpenseCharts();
+      renderYearCharts();
       renderGoal();
     });
 

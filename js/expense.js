@@ -15,9 +15,14 @@ const FIELD_MAP = [
   { key: 'hana-cheongyak', category: '청약통장 (적금)', section: 'savings' },
   { key: 'hana-sonnimcare', category: '손님캐어 적금', section: 'savings' },
 
-  // 연금·개인IRP
-  { key: 'pension', category: '연금저축 (적금)', section: 'savings' },
-  { key: 'irp', category: '개인형IRP (적금)', section: 'savings' },
+  // 정기예탁
+  { key: 'deposit-nh-1y', category: '정기예탁 1년 (농협)', section: 'deposit' },
+
+  // 연금 (퇴직연금)
+  { key: 'pension-kb-songchon', category: '송촌자립 (퇴직연금·국민은행)', section: 'pension' },
+  { key: 'pension-kb-irp', category: 'IRP (퇴직연금·국민은행)', section: 'pension' },
+  { key: 'pension-hana-dolbom', category: '돌봄센터 (퇴직연금·하나은행)', section: 'pension' },
+  { key: 'pension-hana-irp', category: 'IRP (퇴직연금·하나은행)', section: 'pension' },
 
   // 고정지출 - 헌금
   { key: 'offer-tithe', category: '십일조 (헌금)', section: 'fixed' },
@@ -71,6 +76,7 @@ let editingId = null;
 let currentEntries = [];
 let autoDebitSettings = {}; // { [key]: { day, amount, lastRunMonth } }
 let activePopoverKey = null;
+let itemDates = {}; // { [key]: 'YYYY-MM-DD' } — 항목별로 따로 지정한 지출 날짜
 
 function formatWon(amount) {
   return Number(amount).toLocaleString('ko-KR') + '원';
@@ -185,6 +191,48 @@ function updateTotalDisplay() {
   });
 }
 
+function formatDateShort(iso) {
+  const [, m, d] = iso.split('-');
+  return `${Number(m)}/${Number(d)}`;
+}
+
+function initItemDateTriggers() {
+  document.querySelectorAll('.date-trigger').forEach((btn) => {
+    const key = btn.dataset.dateKey;
+    const hiddenInput = getField(`${key}-date`);
+    if (!hiddenInput) return;
+
+    btn.addEventListener('click', () => {
+      if (typeof hiddenInput.showPicker === 'function') {
+        try { hiddenInput.showPicker(); return; } catch (err) { /* fall through */ }
+      }
+      hiddenInput.focus();
+      hiddenInput.click();
+    });
+
+    hiddenInput.addEventListener('change', () => {
+      if (hiddenInput.value) {
+        itemDates[key] = hiddenInput.value;
+        btn.classList.add('is-set');
+        btn.title = `지출 날짜: ${formatDateShort(hiddenInput.value)}`;
+      } else {
+        delete itemDates[key];
+        btn.classList.remove('is-set');
+        btn.title = '지출 날짜 선택';
+      }
+    });
+  });
+}
+
+function resetItemDates() {
+  itemDates = {};
+  document.querySelectorAll('.item-date-input').forEach((input) => { input.value = ''; });
+  document.querySelectorAll('.date-trigger').forEach((btn) => {
+    btn.classList.remove('is-set');
+    btn.title = '지출 날짜 선택';
+  });
+}
+
 function initForm() {
   const form = document.getElementById('expense-form');
   if (!form) return;
@@ -193,6 +241,8 @@ function initForm() {
   if (dateInput && !dateInput.value) {
     dateInput.value = new Date().toISOString().slice(0, 10);
   }
+
+  initItemDateTriggers();
 
   form.addEventListener('input', updateTotalDisplay);
 
@@ -211,7 +261,7 @@ function initForm() {
       })
       .filter((row) => row.amount > 0)
       .map((row) => ({
-        date,
+        date: itemDates[row.field.key] || date,
         category: row.field.category,
         section: row.field.section,
         amount: row.amount,
@@ -240,6 +290,7 @@ function initForm() {
 
       form.reset();
       dateInput.value = date;
+      resetItemDates();
       updateTotalDisplay();
     } catch (err) {
       alert('저장 중 오류가 발생했어요: ' + err.message);
