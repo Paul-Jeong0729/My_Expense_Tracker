@@ -1,0 +1,183 @@
+/* savings.css — savings.html 전용 스타일
+   css/style.css의 색상·폰트 변수(.stats-card, .form-subsection 등)를 그대로 이어서 써요. */
+
+.savings-section { display: flex; flex-direction: column; gap: 24px; }
+
+/* 목표 달성률 카드 상단 타이틀 */
+.goal-title-block {
+  margin-bottom: 20px;
+}
+
+.goal-title-amount {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.goal-title-sub {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* 적금/연금 트리 항목 그리드 */
+.savings-tree-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.savings-tree-item {
+  background: var(--bg);
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.savings-tree-item-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.savings-tree-item-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.savings-tree-item-monthly {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.savings-tree-item-cumulative {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--brand);
+}
+
+/* 시작월 설정 */
+.savings-start-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.savings-start-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.savings-start-label input[type="month"] {
+  font-family: var(--font-body);
+  font-size: 12px;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-main);
+  outline: none;
+  transition: border-color .15s ease;
+}
+
+.savings-start-label input[type="month"]:focus { border-color: var(--brand); }
+
+/* 직접 수정 (정기예탁 등) */
+.savings-manual-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.savings-manual-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.savings-manual-label input[type="number"] {
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-main);
+  outline: none;
+  width: 140px;
+  transition: border-color .15s ease;
+}
+
+.savings-manual-label input[type="number"]:focus { border-color: var(--brand); }
+
+.savings-save-hint {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--balance);
+}
+
+.savings-note {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* 연금 IRP 빠른 입금 */
+.savings-add-row {
+  display: flex;
+  gap: 8px;
+}
+
+.savings-add-row input[type="number"] {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-main);
+  outline: none;
+  transition: border-color .15s ease;
+}
+
+.savings-add-row input[type="number"]:focus { border-color: var(--brand); }
+
+.tree-add-btn {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+  background: var(--brand);
+  border: none;
+  padding: 0 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: opacity .15s ease;
+}
+
+.tree-add-btn:hover { opacity: .9; }
+.tree-add-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+.savings-add-message {
+  font-size: 12px;
+  color: var(--balance);
+  min-height: 14px;
+}
+
+.savings-add-message.error { color: var(--expense); }
+
+@media (max-width: 720px) {
+  .savings-tree-grid { grid-template-columns: 1fr; }
+}
