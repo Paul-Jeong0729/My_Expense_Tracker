@@ -11,6 +11,7 @@
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
 
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/savings-progress.css">
 </head>
 <body>
 
@@ -35,7 +36,6 @@
 
         <div class="nav-right">
           <nav class="nav-menu">
-            <a href="savings.html" target="_blank" class="nav-link">적금</a>
             <a href="stats.html" target="_blank" class="nav-link">통계</a>
             <a href="settings.html" target="_blank" class="nav-link">설정</a>
           </nav>
@@ -80,6 +80,13 @@
               <input type="number" inputmode="numeric" min="0" placeholder="0"
                 data-key="nh-life" value="778250">
               <button type="button" class="auto-debit-trigger" data-auto-key="nh-life"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="nh-life">이체일 설정</span></button>
+              <div class="savings-start-row">
+                <label class="savings-start-label">
+                  <span>시작월</span>
+                  <input type="month" class="savings-start-input" data-start-key="nh-life">
+                </label>
+                <span class="savings-accum-amount" data-accum-amount="nh-life">시작월을 설정해주세요</span>
+              </div>
             </label>
           </div>
         </div>
@@ -92,78 +99,61 @@
               <input type="number" inputmode="numeric" min="0" placeholder="0"
                 data-key="hana-cheongyak" value="50000">
               <button type="button" class="auto-debit-trigger" data-auto-key="hana-cheongyak"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="hana-cheongyak">이체일 설정</span></button>
+              <div class="savings-start-row">
+                <label class="savings-start-label">
+                  <span>시작월</span>
+                  <input type="month" class="savings-start-input" data-start-key="hana-cheongyak">
+                </label>
+                <span class="savings-accum-amount" data-accum-amount="hana-cheongyak">시작월을 설정해주세요</span>
+              </div>
             </label>
             <label class="form-field">
               <span>손님캐어 적금</span>
               <input type="number" inputmode="numeric" min="0" placeholder="0"
                 data-key="hana-sonnimcare" value="20000">
               <button type="button" class="auto-debit-trigger" data-auto-key="hana-sonnimcare"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="hana-sonnimcare">이체일 설정</span></button>
+              <div class="savings-start-row">
+                <label class="savings-start-label">
+                  <span>시작월</span>
+                  <input type="month" class="savings-start-input" data-start-key="hana-sonnimcare">
+                </label>
+                <span class="savings-accum-amount" data-accum-amount="hana-sonnimcare">시작월을 설정해주세요</span>
+              </div>
             </label>
           </div>
+        </div>
+
+        <div class="form-subsection">
+          <span class="form-subsection-label">연금·개인IRP</span>
+          <div class="form-field-grid">
+            <label class="form-field">
+              <span>연금저축</span>
+              <input type="number" inputmode="numeric" min="0" placeholder="0"
+                data-key="pension">
+              <button type="button" class="auto-debit-trigger" data-auto-key="pension"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="pension">이체일 설정</span></button>
+            </label>
+            <label class="form-field">
+              <span>개인형IRP</span>
+              <input type="number" inputmode="numeric" min="0" placeholder="0"
+                data-key="irp">
+              <button type="button" class="auto-debit-trigger" data-auto-key="irp"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="irp">이체일 설정</span></button>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-subsection">
+          <span class="form-subsection-label">정기예탁</span>
+          <div class="form-field-grid">
+            <label class="form-field">
+              <span>정기예탁금액 <small style="font-weight:400;color:var(--text-muted);">(매년 변경돼요)</small></span>
+              <input type="number" inputmode="numeric" min="0" placeholder="0" id="term-deposit-input">
+              <span class="savings-save-hint" id="term-deposit-save-hint"></span>
+            </label>
+          </div>
+          <p class="savings-note">※ 매달 반복되는 지출이 아니라서 위 합계에는 포함되지 않아요. 연초에 이자가 붙어 금액이 바뀔 때 여기서 직접 수정해주세요.</p>
         </div>
 
         <div class="section-subtotal">소계 <strong data-subtotal-for="savings">0원</strong></div>
-      </div>
-
-      <!-- 1-2. 정기예탁 -->
-      <div class="form-section">
-        <h3 class="form-section-title">정기예탁</h3>
-
-        <div class="form-subsection">
-          <span class="form-subsection-label">농협</span>
-          <div class="form-field-grid">
-            <label class="form-field">
-              <span>1년</span>
-              <input type="number" inputmode="numeric" min="0" placeholder="0"
-                data-key="deposit-nh-1y" value="314834">
-            </label>
-          </div>
-        </div>
-
-        <div class="section-subtotal">소계 <strong data-subtotal-for="deposit">0원</strong></div>
-      </div>
-
-      <!-- 1-3. 연금 (퇴직연금) -->
-      <div class="form-section">
-        <h3 class="form-section-title">연금</h3>
-
-        <div class="form-subsection">
-          <span class="form-subsection-label">퇴직연금 · 국민은행</span>
-          <div class="form-field-grid">
-            <label class="form-field">
-              <span>송촌자립</span>
-              <input type="number" inputmode="numeric" min="0" placeholder="0"
-                data-key="pension-kb-songchon" value="176380">
-              <button type="button" class="auto-debit-trigger" data-auto-key="pension-kb-songchon"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="pension-kb-songchon">이체일 설정</span></button>
-            </label>
-            <label class="form-field">
-              <span>IRP (추가 입금)</span>
-              <input type="number" inputmode="numeric" min="0" placeholder="0"
-                data-key="pension-kb-irp">
-            </label>
-          </div>
-        </div>
-
-        <div class="form-subsection">
-          <span class="form-subsection-label">퇴직연금 · 하나은행</span>
-          <div class="form-field-grid">
-            <label class="form-field">
-              <span>돌봄센터</span>
-              <input type="number" inputmode="numeric" min="0" placeholder="0"
-                data-key="pension-hana-dolbom" value="90270">
-              <button type="button" class="auto-debit-trigger" data-auto-key="pension-hana-dolbom"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="pension-hana-dolbom">이체일 설정</span></button>
-            </label>
-            <label class="form-field">
-              <span>IRP (추가 입금)</span>
-              <input type="number" inputmode="numeric" min="0" placeholder="0"
-                data-key="pension-hana-irp">
-            </label>
-          </div>
-        </div>
-
-        <p class="auto-debit-hint">💡 송촌자립·돌봄센터는 자동이체일을 <strong>10일</strong>로 설정해두시면 매달 10일에 자동으로 기록돼요 (📅 아이콘을 한 번만 눌러 설정해주세요). IRP는 추가로 입금할 때마다 그 금액만 입력하고 저장하면 누적돼요.</p>
-
-        <div class="section-subtotal">소계 <strong data-subtotal-for="pension">0원</strong></div>
       </div>
 
       <!-- 2. 고정지출 -->
@@ -178,48 +168,36 @@
               <input type="number" inputmode="numeric" min="0" placeholder="0"
                 data-key="offer-tithe" value="200000">
               <button type="button" class="auto-debit-trigger" data-auto-key="offer-tithe"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="offer-tithe">이체일 설정</span></button>
-              <button type="button" class="date-trigger" data-date-key="offer-tithe"><span class="date-trigger-icon">🗓️</span></button>
-              <input type="date" class="item-date-input" data-key="offer-tithe-date" tabindex="-1">
             </label>
             <label class="form-field">
               <span>절기헌금</span>
               <input type="number" inputmode="numeric" min="0" placeholder="0"
                 data-key="offer-season">
               <button type="button" class="auto-debit-trigger" data-auto-key="offer-season"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="offer-season">이체일 설정</span></button>
-              <button type="button" class="date-trigger" data-date-key="offer-season"><span class="date-trigger-icon">🗓️</span></button>
-              <input type="date" class="item-date-input" data-key="offer-season-date" tabindex="-1">
             </label>
             <label class="form-field">
               <span>건축헌금</span>
               <input type="number" inputmode="numeric" min="0" placeholder="0"
                 data-key="offer-building" value="30000">
               <button type="button" class="auto-debit-trigger" data-auto-key="offer-building"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="offer-building">이체일 설정</span></button>
-              <button type="button" class="date-trigger" data-date-key="offer-building"><span class="date-trigger-icon">🗓️</span></button>
-              <input type="date" class="item-date-input" data-key="offer-building-date" tabindex="-1">
             </label>
             <label class="form-field">
               <span>선교헌금</span>
               <input type="number" inputmode="numeric" min="0" placeholder="0"
                 data-key="offer-mission">
               <button type="button" class="auto-debit-trigger" data-auto-key="offer-mission"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="offer-mission">이체일 설정</span></button>
-              <button type="button" class="date-trigger" data-date-key="offer-mission"><span class="date-trigger-icon">🗓️</span></button>
-              <input type="date" class="item-date-input" data-key="offer-mission-date" tabindex="-1">
             </label>
             <label class="form-field">
               <span>지역회비</span>
               <input type="number" inputmode="numeric" min="0" placeholder="0"
                 data-key="offer-region">
               <button type="button" class="auto-debit-trigger" data-auto-key="offer-region"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="offer-region">이체일 설정</span></button>
-              <button type="button" class="date-trigger" data-date-key="offer-region"><span class="date-trigger-icon">🗓️</span></button>
-              <input type="date" class="item-date-input" data-key="offer-region-date" tabindex="-1">
             </label>
             <label class="form-field">
               <span>천지일보</span>
               <input type="number" inputmode="numeric" min="0" placeholder="0"
                 data-key="offer-cheonji" value="12000">
               <button type="button" class="auto-debit-trigger" data-auto-key="offer-cheonji"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="offer-cheonji">이체일 설정</span></button>
-              <button type="button" class="date-trigger" data-date-key="offer-cheonji"><span class="date-trigger-icon">🗓️</span></button>
-              <input type="date" class="item-date-input" data-key="offer-cheonji-date" tabindex="-1">
             </label>
           </div>
         </div>
@@ -232,48 +210,36 @@
               <input type="number" inputmode="numeric" min="0" placeholder="0"
                 data-key="ins-hyundai" value="141240">
               <button type="button" class="auto-debit-trigger" data-auto-key="ins-hyundai"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="ins-hyundai">이체일 설정</span></button>
-              <button type="button" class="date-trigger" data-date-key="ins-hyundai"><span class="date-trigger-icon">🗓️</span></button>
-              <input type="date" class="item-date-input" data-key="ins-hyundai-date" tabindex="-1">
             </label>
             <label class="form-field">
               <span>예별손1</span>
               <input type="number" inputmode="numeric" min="0" placeholder="0"
                 data-key="ins-yebyeol1" value="34887">
               <button type="button" class="auto-debit-trigger" data-auto-key="ins-yebyeol1"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="ins-yebyeol1">이체일 설정</span></button>
-              <button type="button" class="date-trigger" data-date-key="ins-yebyeol1"><span class="date-trigger-icon">🗓️</span></button>
-              <input type="date" class="item-date-input" data-key="ins-yebyeol1-date" tabindex="-1">
             </label>
             <label class="form-field">
               <span>예별손2</span>
               <input type="number" inputmode="numeric" min="0" placeholder="0"
                 data-key="ins-yebyeol2" value="9227">
               <button type="button" class="auto-debit-trigger" data-auto-key="ins-yebyeol2"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="ins-yebyeol2">이체일 설정</span></button>
-              <button type="button" class="date-trigger" data-date-key="ins-yebyeol2"><span class="date-trigger-icon">🗓️</span></button>
-              <input type="date" class="item-date-input" data-key="ins-yebyeol2-date" tabindex="-1">
             </label>
             <label class="form-field">
               <span>AXA 운전자보험</span>
               <input type="number" inputmode="numeric" min="0" placeholder="0"
                 data-key="ins-axa" value="17500">
               <button type="button" class="auto-debit-trigger" data-auto-key="ins-axa"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="ins-axa">이체일 설정</span></button>
-              <button type="button" class="date-trigger" data-date-key="ins-axa"><span class="date-trigger-icon">🗓️</span></button>
-              <input type="date" class="item-date-input" data-key="ins-axa-date" tabindex="-1">
             </label>
             <label class="form-field">
               <span>웅진프라이드</span>
               <input type="number" inputmode="numeric" min="0" placeholder="0"
                 data-key="ins-woongjin" value="15000">
               <button type="button" class="auto-debit-trigger" data-auto-key="ins-woongjin"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="ins-woongjin">이체일 설정</span></button>
-              <button type="button" class="date-trigger" data-date-key="ins-woongjin"><span class="date-trigger-icon">🗓️</span></button>
-              <input type="date" class="item-date-input" data-key="ins-woongjin-date" tabindex="-1">
             </label>
             <label class="form-field">
               <span>현대해상 간병</span>
               <input type="number" inputmode="numeric" min="0" placeholder="0"
                 data-key="ins-hyundai-care" value="55240">
               <button type="button" class="auto-debit-trigger" data-auto-key="ins-hyundai-care"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="ins-hyundai-care">이체일 설정</span></button>
-              <button type="button" class="date-trigger" data-date-key="ins-hyundai-care"><span class="date-trigger-icon">🗓️</span></button>
-              <input type="date" class="item-date-input" data-key="ins-hyundai-care-date" tabindex="-1">
             </label>
           </div>
         </div>
@@ -286,16 +252,12 @@
               <input type="number" inputmode="numeric" min="0" placeholder="0"
                 data-key="installment-car" value="328117">
               <button type="button" class="auto-debit-trigger" data-auto-key="installment-car"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="installment-car">이체일 설정</span></button>
-              <button type="button" class="date-trigger" data-date-key="installment-car"><span class="date-trigger-icon">🗓️</span></button>
-              <input type="date" class="item-date-input" data-key="installment-car-date" tabindex="-1">
             </label>
             <label class="form-field">
               <span>자동차 보험</span>
               <input type="number" inputmode="numeric" min="0" placeholder="0"
                 data-key="installment-car-ins">
               <button type="button" class="auto-debit-trigger" data-auto-key="installment-car-ins"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="installment-car-ins">이체일 설정</span></button>
-              <button type="button" class="date-trigger" data-date-key="installment-car-ins"><span class="date-trigger-icon">🗓️</span></button>
-              <input type="date" class="item-date-input" data-key="installment-car-ins-date" tabindex="-1">
             </label>
           </div>
         </div>
@@ -306,24 +268,18 @@
             <input type="number" inputmode="numeric" min="0" placeholder="0"
               data-key="phone-bill" value="49280">
               <button type="button" class="auto-debit-trigger" data-auto-key="phone-bill"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="phone-bill">이체일 설정</span></button>
-              <button type="button" class="date-trigger" data-date-key="phone-bill"><span class="date-trigger-icon">🗓️</span></button>
-              <input type="date" class="item-date-input" data-key="phone-bill-date" tabindex="-1">
           </label>
           <label class="form-field">
             <span>네이버스토어</span>
             <input type="number" inputmode="numeric" min="0" placeholder="0"
               data-key="naver-store" value="5000">
               <button type="button" class="auto-debit-trigger" data-auto-key="naver-store"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="naver-store">이체일 설정</span></button>
-              <button type="button" class="date-trigger" data-date-key="naver-store"><span class="date-trigger-icon">🗓️</span></button>
-              <input type="date" class="item-date-input" data-key="naver-store-date" tabindex="-1">
           </label>
           <label class="form-field">
             <span>환희 용돈</span>
             <input type="number" inputmode="numeric" min="0" placeholder="0"
               data-key="hwanhee-allowance" value="50000">
               <button type="button" class="auto-debit-trigger" data-auto-key="hwanhee-allowance"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="hwanhee-allowance">이체일 설정</span></button>
-              <button type="button" class="date-trigger" data-date-key="hwanhee-allowance"><span class="date-trigger-icon">🗓️</span></button>
-              <input type="date" class="item-date-input" data-key="hwanhee-allowance-date" tabindex="-1">
           </label>
         </div>
 
@@ -335,24 +291,18 @@
               <input type="number" inputmode="numeric" min="0" placeholder="0"
                 data-key="util-tv" value="2500">
               <button type="button" class="auto-debit-trigger" data-auto-key="util-tv"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="util-tv">이체일 설정</span></button>
-              <button type="button" class="date-trigger" data-date-key="util-tv"><span class="date-trigger-icon">🗓️</span></button>
-              <input type="date" class="item-date-input" data-key="util-tv-date" tabindex="-1">
             </label>
             <label class="form-field">
               <span>전기</span>
               <input type="number" inputmode="numeric" min="0" placeholder="0"
                 data-key="util-electric">
               <button type="button" class="auto-debit-trigger" data-auto-key="util-electric"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="util-electric">이체일 설정</span></button>
-              <button type="button" class="date-trigger" data-date-key="util-electric"><span class="date-trigger-icon">🗓️</span></button>
-              <input type="date" class="item-date-input" data-key="util-electric-date" tabindex="-1">
             </label>
             <label class="form-field">
               <span>가스</span>
               <input type="number" inputmode="numeric" min="0" placeholder="0"
                 data-key="util-gas">
               <button type="button" class="auto-debit-trigger" data-auto-key="util-gas"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="util-gas">이체일 설정</span></button>
-              <button type="button" class="date-trigger" data-date-key="util-gas"><span class="date-trigger-icon">🗓️</span></button>
-              <input type="date" class="item-date-input" data-key="util-gas-date" tabindex="-1">
             </label>
           </div>
         </div>
@@ -365,16 +315,12 @@
               <input type="number" inputmode="numeric" min="0" placeholder="0"
                 data-key="loan-principal" value="500000">
               <button type="button" class="auto-debit-trigger" data-auto-key="loan-principal"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="loan-principal">이체일 설정</span></button>
-              <button type="button" class="date-trigger" data-date-key="loan-principal"><span class="date-trigger-icon">🗓️</span></button>
-              <input type="date" class="item-date-input" data-key="loan-principal-date" tabindex="-1">
             </label>
             <label class="form-field">
               <span>대출이자</span>
               <input type="number" inputmode="numeric" min="0" placeholder="0"
                 data-key="loan-interest">
               <button type="button" class="auto-debit-trigger" data-auto-key="loan-interest"><span class="auto-debit-icon">📅</span><span class="auto-debit-text" data-auto-text="loan-interest">이체일 설정</span></button>
-              <button type="button" class="date-trigger" data-date-key="loan-interest"><span class="date-trigger-icon">🗓️</span></button>
-              <input type="date" class="item-date-input" data-key="loan-interest-date" tabindex="-1">
             </label>
           </div>
         </div>
@@ -403,47 +349,42 @@
       <!-- 4. 일반지출 -->
       <div class="form-section">
         <h3 class="form-section-title">일반지출</h3>
-        <div class="form-field-list">
-          <div class="form-field-row">
-            <span class="form-field-row-label">마트</span>
-            <input type="number" inputmode="numeric" min="0" placeholder="0"
-              class="form-field-row-amount" data-key="mart">
-            <input type="text" class="form-field-row-memo" placeholder="메모 (선택)" data-key="mart-memo">
-            <button type="button" class="date-trigger" data-date-key="mart"><span class="date-trigger-icon">🗓️</span></button>
-            <input type="date" class="item-date-input" data-key="mart-date" tabindex="-1">
-          </div>
-          <div class="form-field-row">
-            <span class="form-field-row-label">카페</span>
-            <input type="number" inputmode="numeric" min="0" placeholder="0"
-              class="form-field-row-amount" data-key="cafe">
-            <input type="text" class="form-field-row-memo" placeholder="메모 (선택)" data-key="cafe-memo">
-            <button type="button" class="date-trigger" data-date-key="cafe"><span class="date-trigger-icon">🗓️</span></button>
-            <input type="date" class="item-date-input" data-key="cafe-date" tabindex="-1">
-          </div>
-          <div class="form-field-row">
-            <span class="form-field-row-label">온라인</span>
-            <input type="number" inputmode="numeric" min="0" placeholder="0"
-              class="form-field-row-amount" data-key="online">
-            <input type="text" class="form-field-row-memo" placeholder="메모 (선택)" data-key="online-memo">
-            <button type="button" class="date-trigger" data-date-key="online"><span class="date-trigger-icon">🗓️</span></button>
-            <input type="date" class="item-date-input" data-key="online-date" tabindex="-1">
-          </div>
-          <div class="form-field-row">
-            <span class="form-field-row-label">식당</span>
-            <input type="number" inputmode="numeric" min="0" placeholder="0"
-              class="form-field-row-amount" data-key="restaurant">
-            <input type="text" class="form-field-row-memo" placeholder="메모 (선택)" data-key="restaurant-memo">
-            <button type="button" class="date-trigger" data-date-key="restaurant"><span class="date-trigger-icon">🗓️</span></button>
-            <input type="date" class="item-date-input" data-key="restaurant-date" tabindex="-1">
-          </div>
-          <div class="form-field-row">
-            <span class="form-field-row-label">기타</span>
-            <input type="number" inputmode="numeric" min="0" placeholder="0"
-              class="form-field-row-amount" data-key="etc">
-            <input type="text" class="form-field-row-memo" placeholder="메모 (선택)" data-key="etc-memo">
-            <button type="button" class="date-trigger" data-date-key="etc"><span class="date-trigger-icon">🗓️</span></button>
-            <input type="date" class="item-date-input" data-key="etc-date" tabindex="-1">
-          </div>
+        <div class="form-field-grid">
+          <label class="form-field">
+            <span>마트</span>
+            <div class="form-field-inline">
+              <input type="number" inputmode="numeric" min="0" placeholder="0" data-key="mart">
+              <input type="text" class="form-field-row-memo" placeholder="메모 (선택)" data-key="mart-memo">
+            </div>
+          </label>
+          <label class="form-field">
+            <span>카페</span>
+            <div class="form-field-inline">
+              <input type="number" inputmode="numeric" min="0" placeholder="0" data-key="cafe">
+              <input type="text" class="form-field-row-memo" placeholder="메모 (선택)" data-key="cafe-memo">
+            </div>
+          </label>
+          <label class="form-field">
+            <span>온라인</span>
+            <div class="form-field-inline">
+              <input type="number" inputmode="numeric" min="0" placeholder="0" data-key="online">
+              <input type="text" class="form-field-row-memo" placeholder="메모 (선택)" data-key="online-memo">
+            </div>
+          </label>
+          <label class="form-field">
+            <span>식당</span>
+            <div class="form-field-inline">
+              <input type="number" inputmode="numeric" min="0" placeholder="0" data-key="restaurant">
+              <input type="text" class="form-field-row-memo" placeholder="메모 (선택)" data-key="restaurant-memo">
+            </div>
+          </label>
+          <label class="form-field">
+            <span>기타</span>
+            <div class="form-field-inline">
+              <input type="number" inputmode="numeric" min="0" placeholder="0" data-key="etc">
+              <input type="text" class="form-field-row-memo" placeholder="메모 (선택)" data-key="etc-memo">
+            </div>
+          </label>
         </div>
         <div class="section-subtotal">소계 <strong data-subtotal-for="general">0원</strong></div>
       </div>
