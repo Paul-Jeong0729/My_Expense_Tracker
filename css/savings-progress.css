@@ -1,0 +1,57 @@
+/* savings-progress.css
+   expense.html의 "적금" 섹션에 추가된
+   - 시작월 설정 + 누적액 표시 (농협생명보험 / 청약통장 / 손님캐어적금)
+   - 정기예탁금액 수정 필드
+   전용 스타일. css/style.css의 색상·폰트 변수를 그대로 사용해요. */
+
+.savings-start-row {
+  flex: 0 0 100%;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.savings-start-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.savings-start-label input[type="month"] {
+  font-family: var(--font-body);
+  font-size: 12px;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-main);
+  outline: none;
+  transition: border-color .15s ease;
+}
+
+.savings-start-label input[type="month"]:focus {
+  border-color: var(--brand);
+}
+
+.savings-accum-amount {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand);
+}
+
+.savings-note {
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.savings-save-hint {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--balance);
+}
