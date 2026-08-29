@@ -7,6 +7,9 @@
 
 const COLLECTION = 'expense_entries';
 const AUTO_DEBIT_COLLECTION = 'auto_debit_settings';
+const SAVINGS_PROGRESS_COLLECTION = 'app_settings';
+const SAVINGS_PROGRESS_DOC = 'savings_progress';
+const SAVINGS_START_KEYS = ['nh-life', 'hana-cheongyak', 'hana-sonnimcare'];
 
 // 폼 필드 key → { category(표시명), section(소계 그룹) } 매핑
 const FIELD_MAP = [
@@ -15,14 +18,9 @@ const FIELD_MAP = [
   { key: 'hana-cheongyak', category: '청약통장 (적금)', section: 'savings' },
   { key: 'hana-sonnimcare', category: '손님캐어 적금', section: 'savings' },
 
-  // 정기예탁
-  { key: 'deposit-nh-1y', category: '정기예탁 1년 (농협)', section: 'deposit' },
-
-  // 연금 (퇴직연금)
-  { key: 'pension-kb-songchon', category: '송촌자립 (퇴직연금·국민은행)', section: 'pension' },
-  { key: 'pension-kb-irp', category: 'IRP (퇴직연금·국민은행)', section: 'pension' },
-  { key: 'pension-hana-dolbom', category: '돌봄센터 (퇴직연금·하나은행)', section: 'pension' },
-  { key: 'pension-hana-irp', category: 'IRP (퇴직연금·하나은행)', section: 'pension' },
+  // 연금·개인IRP
+  { key: 'pension', category: '연금저축 (적금)', section: 'savings' },
+  { key: 'irp', category: '개인형IRP (적금)', section: 'savings' },
 
   // 고정지출 - 헌금
   { key: 'offer-tithe', category: '십일조 (헌금)', section: 'fixed' },
@@ -76,7 +74,8 @@ let editingId = null;
 let currentEntries = [];
 let autoDebitSettings = {}; // { [key]: { day, amount, lastRunMonth } }
 let activePopoverKey = null;
-let itemDates = {}; // { [key]: 'YYYY-MM-DD' } — 항목별로 따로 지정한 지출 날짜
+let savingsStartMonths = {}; // { [key]: 'YYYY-MM' }
+let termDepositAmount = 0;
 
 function formatWon(amount) {
   return Number(amount).toLocaleString('ko-KR') + '원';
@@ -189,47 +188,94 @@ function updateTotalDisplay() {
     const section = el.dataset.subtotalFor;
     el.textContent = formatWon(calcSectionSubtotal(section));
   });
+
+  renderSavingsAccumulations();
 }
 
-function formatDateShort(iso) {
-  const [, m, d] = iso.split('-');
-  return `${Number(m)}/${Number(d)}`;
+// ---- 적금 시작월 → 누적액 자동 계산 / 정기예탁 금액 ----
+
+function getSavingsProgressRef() {
+  return db.collection(SAVINGS_PROGRESS_COLLECTION).doc(SAVINGS_PROGRESS_DOC);
 }
 
-function initItemDateTriggers() {
-  document.querySelectorAll('.date-trigger').forEach((btn) => {
-    const key = btn.dataset.dateKey;
-    const hiddenInput = getField(`${key}-date`);
-    if (!hiddenInput) return;
+// startMonth('YYYY-MM')부터 이번 달까지, 이번 달을 포함해서 몇 개월이 지났는지 계산
+function monthsElapsedInclusive(startMonth) {
+  if (!startMonth) return 0;
+  const [sy, sm] = startMonth.split('-').map(Number);
+  if (!sy || !sm) return 0;
 
-    btn.addEventListener('click', () => {
-      if (typeof hiddenInput.showPicker === 'function') {
-        try { hiddenInput.showPicker(); return; } catch (err) { /* fall through */ }
-      }
-      hiddenInput.focus();
-      hiddenInput.click();
-    });
+  const now = new Date();
+  const ey = now.getFullYear();
+  const em = now.getMonth() + 1;
 
-    hiddenInput.addEventListener('change', () => {
-      if (hiddenInput.value) {
-        itemDates[key] = hiddenInput.value;
-        btn.classList.add('is-set');
-        btn.title = `지출 날짜: ${formatDateShort(hiddenInput.value)}`;
-      } else {
-        delete itemDates[key];
-        btn.classList.remove('is-set');
-        btn.title = '지출 날짜 선택';
+  const diff = (ey - sy) * 12 + (em - sm) + 1;
+  return diff > 0 ? diff : 0;
+}
+
+function renderSavingsAccumulations() {
+  SAVINGS_START_KEYS.forEach((key) => {
+    const startInput = document.querySelector(`[data-start-key="${key}"]`);
+    const startMonth = savingsStartMonths[key] || '';
+    if (startInput && document.activeElement !== startInput) {
+      startInput.value = startMonth;
+    }
+
+    const amountInput = getField(key);
+    const monthly = amountInput ? Number(amountInput.value) || 0 : 0;
+    const months = monthsElapsedInclusive(startMonth);
+    const accum = monthly * months;
+
+    const accumEl = document.querySelector(`[data-accum-amount="${key}"]`);
+    if (!accumEl) return;
+
+    if (!startMonth) {
+      accumEl.textContent = '시작월을 설정해주세요';
+    } else {
+      const label = startMonth.replace('-', '.');
+      accumEl.textContent = `${label}부터 ${months}개월째 · 누적 ${formatWon(accum)}`;
+    }
+  });
+}
+
+function renderTermDeposit() {
+  const input = document.getElementById('term-deposit-input');
+  if (input && document.activeElement !== input) {
+    input.value = termDepositAmount || '';
+  }
+}
+
+function initSavingsStartInputs() {
+  document.querySelectorAll('.savings-start-input').forEach((input) => {
+    input.addEventListener('change', async () => {
+      const key = input.dataset.startKey;
+      const value = input.value || '';
+      try {
+        await getSavingsProgressRef().set({
+          startMonths: { [key]: value },
+        }, { merge: true });
+      } catch (err) {
+        alert('시작월 저장 중 오류가 발생했어요: ' + err.message);
       }
     });
   });
 }
 
-function resetItemDates() {
-  itemDates = {};
-  document.querySelectorAll('.item-date-input').forEach((input) => { input.value = ''; });
-  document.querySelectorAll('.date-trigger').forEach((btn) => {
-    btn.classList.remove('is-set');
-    btn.title = '지출 날짜 선택';
+function initTermDepositInput() {
+  const input = document.getElementById('term-deposit-input');
+  const hint = document.getElementById('term-deposit-save-hint');
+  if (!input) return;
+
+  input.addEventListener('change', async () => {
+    const value = Number(input.value) || 0;
+    try {
+      await getSavingsProgressRef().set({ termDepositAmount: value }, { merge: true });
+      if (hint) {
+        hint.textContent = '저장됐어요';
+        setTimeout(() => { if (hint) hint.textContent = ''; }, 2000);
+      }
+    } catch (err) {
+      alert('정기예탁 금액 저장 중 오류가 발생했어요: ' + err.message);
+    }
   });
 }
 
@@ -241,8 +287,6 @@ function initForm() {
   if (dateInput && !dateInput.value) {
     dateInput.value = new Date().toISOString().slice(0, 10);
   }
-
-  initItemDateTriggers();
 
   form.addEventListener('input', updateTotalDisplay);
 
@@ -261,7 +305,7 @@ function initForm() {
       })
       .filter((row) => row.amount > 0)
       .map((row) => ({
-        date: itemDates[row.field.key] || date,
+        date,
         category: row.field.category,
         section: row.field.section,
         amount: row.amount,
@@ -290,7 +334,6 @@ function initForm() {
 
       form.reset();
       dateInput.value = date;
-      resetItemDates();
       updateTotalDisplay();
     } catch (err) {
       alert('저장 중 오류가 발생했어요: ' + err.message);
@@ -617,6 +660,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initTableInteractions();
   initDeleteModal();
   initAutoDebitPopover();
+  initSavingsStartInputs();
+  initTermDepositInput();
 
   window.authReady.then((user) => {
     if (!user) return; // auth-guard.js가 로그인 페이지로 이동시킴
@@ -634,6 +679,16 @@ document.addEventListener('DOMContentLoaded', () => {
       snapshot.docs.forEach((doc) => { autoDebitSettings[doc.id] = doc.data(); });
       renderAllAutoDebitLabels();
       runAutoDebitCheck();
+    });
+
+    getSavingsProgressRef().onSnapshot((doc) => {
+      const data = doc.exists ? doc.data() : {};
+      savingsStartMonths = data.startMonths || {};
+      termDepositAmount = Number(data.termDepositAmount) || 0;
+      renderSavingsAccumulations();
+      renderTermDeposit();
+    }, (err) => {
+      console.error(err);
     });
   });
 });
