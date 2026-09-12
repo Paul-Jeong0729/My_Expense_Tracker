@@ -1,0 +1,196 @@
+/* ai-analysis.css — AI 지출 분석 / 소비습관 분석 / 적금·IRP 조언 섹션 전용 스타일
+   style.css의 색상·폰트 변수와 .stats-card 틀을 그대로 이어서 써요. */
+
+.ai-summary-line {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-main);
+  margin-bottom: 10px;
+}
+
+.ai-highlight {
+  color: var(--brand);
+  font-weight: 700;
+}
+
+.ai-metric-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 16px 0 4px;
+}
+
+.ai-metric-chip {
+  flex: 1;
+  min-width: 140px;
+  background: var(--bg);
+  border-radius: 14px;
+  padding: 14px 18px;
+}
+
+.ai-metric-chip span { font-size: 12px; color: var(--text-muted); }
+.ai-metric-chip strong { display: block; font-size: 17px; font-weight: 700; margin-top: 4px; color: var(--text-main); }
+
+.ai-tips-box {
+  background: #F6F5FF;
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-top: 18px;
+}
+
+.ai-tips-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--brand);
+  margin-bottom: 10px;
+}
+
+.ai-tips-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+
+.ai-tips-list li {
+  font-size: 13px;
+  color: var(--text-main);
+  display: flex;
+  gap: 10px;
+  line-height: 1.55;
+}
+
+.tip-num {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--brand);
+  color: var(--white);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-goal-note {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+  background: var(--bg);
+  padding: 12px 16px;
+  border-radius: 12px;
+}
+
+.ai-badge-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+
+.ai-badge-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--bg);
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+.ai-badge-item.level-red { background: #FDE9E9; }
+.ai-badge-item.level-yellow { background: #FFF7E0; }
+.ai-badge-item.level-green { background: #E6F8F1; }
+
+.ai-badge-dot { font-size: 14px; }
+
+.ai-cut-list { display: flex; flex-direction: column; gap: 10px; }
+
+.ai-cut-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg);
+  border-radius: 12px;
+}
+
+.ai-cut-rank {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--expense);
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 10px;
+}
+
+.ai-cut-info { display: flex; flex-direction: column; }
+.ai-cut-category { font-size: 13px; font-weight: 700; color: var(--text-main); }
+.ai-cut-reason { font-size: 12px; color: var(--text-muted); }
+.ai-cut-amount { font-size: 14px; font-weight: 700; color: var(--expense); }
+
+.ai-advice-list { display: flex; flex-direction: column; gap: 14px; }
+
+.ai-advice-item {
+  padding: 16px 18px;
+  background: var(--bg);
+  border-radius: 14px;
+}
+
+.ai-advice-item-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai-advice-item-body { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+.ai-disclaimer { margin-top: 16px; font-size: 11px; color: var(--text-muted); }
+
+.ai-empty { font-size: 13px; color: var(--text-muted); text-align: center; padding: 24px 0; }
+
+/* ---------- 수입/지출 "내역 보기" 페이지 (항목 탭) ---------- */
+.category-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.category-tab {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg);
+  border: 1px solid transparent;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+  white-space: nowrap;
+}
+
+.category-tab:hover { border-color: var(--border); }
+
+.category-tab.active {
+  background: var(--brand);
+  color: var(--white);
+}
+
+.category-tab-group-label {
+  width: 100%;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin: 12px 0 -4px;
+}
+
+.category-tab-group-label:first-child { margin-top: 0; }
+
+@media (max-width: 900px) {
+  .ai-metric-row { flex-direction: column; }
+}
