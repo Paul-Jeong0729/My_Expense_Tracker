@@ -11,6 +11,7 @@
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
 
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/ai-analysis.css">
 </head>
 <body>
 
@@ -129,6 +130,15 @@
       <p class="chart-empty" id="expense-chart-empty" hidden>선택한 기간에 등록된 지출 내역이 없어요.</p>
     </div>
 
+    <!-- AI 소비습관 분석 -->
+    <div class="stats-card">
+      <div class="stats-card-header">
+        <h2>🤖 AI 소비습관 분석</h2>
+      </div>
+      <p class="stats-card-desc">최근 3개월 지출 흐름을 바탕으로 신호등처럼 알려드려요. (규칙 기반 자동 분석이에요)</p>
+      <div id="stats-ai-habit"></div>
+    </div>
+
     <!-- 월별 카드사용 금액 -->
     <div class="stats-card">
       <div class="stats-card-header">
@@ -212,6 +222,10 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/auth-guard.js"></script>
+<script src="js/sheets-config.js"></script>
+<script src="js/sheets-api.js"></script>
+<script src="js/categories.js"></script>
+<script src="js/ai-analysis.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="js/stats.js"></script>
 </body>

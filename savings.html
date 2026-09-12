@@ -12,6 +12,7 @@
 
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/savings.css">
+<link rel="stylesheet" href="css/ai-analysis.css">
 </head>
 <body>
 
@@ -203,12 +204,7 @@
               <span class="savings-tree-item-name">IRP</span>
             </div>
             <div class="savings-tree-item-cumulative" data-cumulative="pension-kb-irp">0원 누적</div>
-            <div class="savings-add-row">
-              <input type="number" inputmode="numeric" min="0" class="tree-add-input"
-                data-add-key="pension-kb-irp" placeholder="입금액">
-              <button type="button" class="tree-add-btn" data-add-key="pension-kb-irp">입금</button>
-            </div>
-            <p class="savings-add-message" data-add-message="pension-kb-irp"></p>
+            <p class="savings-note">※ 입금 시 지출 시트에 항목 "IRP (퇴직연금·국민은행)"으로 직접 입력해주세요.</p>
           </div>
 
         </div>
@@ -231,18 +227,22 @@
               <span class="savings-tree-item-name">IRP</span>
             </div>
             <div class="savings-tree-item-cumulative" data-cumulative="pension-hana-irp">0원 누적</div>
-            <div class="savings-add-row">
-              <input type="number" inputmode="numeric" min="0" class="tree-add-input"
-                data-add-key="pension-hana-irp" placeholder="입금액">
-              <button type="button" class="tree-add-btn" data-add-key="pension-hana-irp">입금</button>
-            </div>
-            <p class="savings-add-message" data-add-message="pension-hana-irp"></p>
+            <p class="savings-note">※ 입금 시 지출 시트에 항목 "IRP (퇴직연금·하나은행)"으로 직접 입력해주세요.</p>
           </div>
 
         </div>
       </div>
 
       <div class="section-subtotal">연금 소계 <strong id="pension-total">0원</strong></div>
+    </div>
+
+    <!-- AI 조언 -->
+    <div class="stats-card">
+      <div class="stats-card-header">
+        <h2>🤖 적금·IRP 효율화 AI 조언</h2>
+      </div>
+      <p class="stats-card-desc">지금까지 모은 금액과 목표를 바탕으로 전문가처럼 조언해드려요. (규칙 기반 자동 분석이에요)</p>
+      <div id="savings-ai-advice"></div>
     </div>
 
   </section>
@@ -273,6 +273,11 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/auth-guard.js"></script>
+<script src="js/sheets-config.js"></script>
+<script src="js/sheets-api.js"></script>
+<script src="js/categories.js"></script>
+<script src="js/ai-analysis.js"></script>
+<script src="js/savings-advice.js"></script>
 <script src="js/savings.js"></script>
 </body>
 </html>
