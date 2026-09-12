@@ -1,9 +1,6 @@
 // main.js — 홈 화면(index.html) 전용 스크립트
-// Firestore의 income_entries / expense_entries 컬렉션을 실시간으로 구독해서
+// Google Sheets의 Income / Expense 탭을 15초 주기로 폴링해서
 // 이번 달 요약(총수입/총지출/잔액)과 최근 5건 내역 테이블을 채워줍니다.
-
-const INCOME_COLLECTION = 'income_entries';
-const EXPENSE_COLLECTION = 'expense_entries';
 
 function formatWonPlain(amount) {
   return Number(amount).toLocaleString('ko-KR');
@@ -72,18 +69,29 @@ function rerender() {
   renderRecentTable('expense-table-body', latestExpense, '-');
 }
 
+async function refreshIncome() {
+  try {
+    latestIncome = await SheetsAPI.list('Income');
+    rerender();
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function refreshExpense() {
+  try {
+    latestExpense = await SheetsAPI.list('Expense');
+    rerender();
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   window.authReady.then((user) => {
-    if (!user) return; // auth-guard.js가 로그인 페이지로 이동시킴
+    if (!user) return; // auth-guard.js가 로그인 페이지로 이동시킴 (data-auth-optional 페이지는 예외)
 
-    db.collection(INCOME_COLLECTION).onSnapshot((snapshot) => {
-      latestIncome = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      rerender();
-    });
-
-    db.collection(EXPENSE_COLLECTION).onSnapshot((snapshot) => {
-      latestExpense = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      rerender();
-    });
+    startPolling(refreshIncome, 15000);
+    startPolling(refreshExpense, 15000);
   });
 });
